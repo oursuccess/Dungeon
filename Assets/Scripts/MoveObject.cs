@@ -5,29 +5,39 @@ using UnityEngine;
 public abstract class MoveObject : MonoBehaviour
 {
     [SerializeField]
-    protected float moveTime;
+    protected float moveTime = 1;
     [SerializeField]
-    protected float moveDistance;
+    protected float moveDistance = 1;
     [SerializeField]
-    protected float velocity;
+    protected float velocity = 1;
 
-    private float inverseMoveTime;
+    protected Vector2 moveDir;
 
-    private Rigidbody2D rigidBody2D;
+    protected float lastMoveTime;
+
+    protected float inverseMoveTime;
+    protected Coroutine moveRoutine;
+
+    protected Rigidbody2D rigidBody2D;
 
     // Start is called before the first frame update
-    void Start()
+    protected virtual void Start()
     {
+        lastMoveTime = 0;
         inverseMoveTime = 1 / moveTime;
         rigidBody2D = GetComponent<Rigidbody2D>();
     }
 
-    protected void Move(Vector2 direction)
+    protected virtual void SimpleMove(Vector2 direction)
     {
-        StartCoroutine(SmoothMovement(direction));
+        if(moveRoutine != null)
+        {
+            StopCoroutine(moveRoutine);
+        }
+        moveRoutine = StartCoroutine(SmoothMovement(direction));
     }
 
-    private IEnumerator SmoothMovement(Vector2 direction)
+    protected IEnumerator SmoothMovement(Vector2 direction)
     {
         Vector2 start = transform.position;
         Vector2 end = start + direction;
@@ -39,8 +49,18 @@ public abstract class MoveObject : MonoBehaviour
             rigidBody2D.MovePosition(target);
             start = transform.position;
             distanceNow = (end - start).sqrMagnitude;
+            yield return null;
         }
-
         yield return true;
     }
+
+    protected virtual void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.transform.tag == "ground")
+        {
+            rigidBody2D.gravityScale = 0f;
+            rigidBody2D.MovePosition(new Vector2(0, 0.05f));
+        }
+    }
+
 }

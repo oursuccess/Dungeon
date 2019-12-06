@@ -2,17 +2,31 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : MoveCharacter
 {
-    // Start is called before the first frame update
-    void Start()
+    protected override void Start()
     {
-        
+        moveDir = Vector2.right;
+        base.Start();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        
+        lastMoveTime += Time.deltaTime;
+        if(lastMoveTime >= moveTime)
+        {
+            TryMove(moveDir, layer);
+        }
+    }
+
+    public void Dead()
+    {
+        enabled = false;
+        Debug.Log("Dead");
+    }
+
+    protected override void OnCollisionEnter2D(Collision2D collision)
+    {
+        base.OnCollisionEnter2D(collision);
     }
 }
