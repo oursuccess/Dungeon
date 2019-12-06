@@ -28,7 +28,35 @@ public abstract class MoveObject : MonoBehaviour
         rigidBody2D = GetComponent<Rigidbody2D>();
     }
 
-    protected virtual void SimpleMove(Vector2 direction)
+    protected virtual void Update()
+    {
+    }
+
+    protected virtual void SimpleAutoMove(Vector2 direction)
+    {
+        if(moveRoutine != null)
+        {
+            StopCoroutine(moveRoutine);
+        }
+        moveRoutine = StartCoroutine(AutoMoveTo(direction));
+    }
+
+    protected virtual void StopMove()
+    {
+        if(moveRoutine != null)
+        {
+            StopCoroutine(moveRoutine);
+        }
+    }
+
+    private IEnumerator AutoMoveTo(Vector2 direction)
+    {
+        Vector2 start = transform.position;
+        rigidBody2D.MovePosition(start + direction * velocity * Time.deltaTime);
+        yield return null;
+    }
+
+    protected virtual void Move(Vector2 direction)
     {
         if(moveRoutine != null)
         {
@@ -37,7 +65,7 @@ public abstract class MoveObject : MonoBehaviour
         moveRoutine = StartCoroutine(SmoothMovement(direction));
     }
 
-    protected IEnumerator SmoothMovement(Vector2 direction)
+    private IEnumerator SmoothMovement(Vector2 direction)
     {
         Vector2 start = transform.position;
         Vector2 end = start + direction;
@@ -56,10 +84,10 @@ public abstract class MoveObject : MonoBehaviour
 
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
-        if(collision.transform.tag == "ground")
+        if (collision.transform.name.Contains("Ground"))
         {
             rigidBody2D.gravityScale = 0f;
-            rigidBody2D.MovePosition(new Vector2(0, 0.05f));
+            rigidBody2D.MovePosition(new Vector2(transform.position.x, transform.position.y + 0.01f));
         }
     }
 
