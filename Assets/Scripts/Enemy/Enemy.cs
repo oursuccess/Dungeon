@@ -11,5 +11,5 @@ public abstract class Enemy : MonoBehaviour, IHandlePlayerHit
     }
 
     public abstract void Effect(Player player);
-    public abstract void OnPlayerHit();
+    public abstract void OnPlayerHit(Player player);
 }

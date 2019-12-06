@@ -41,7 +41,7 @@ public abstract class MoveObject : MonoBehaviour
         moveRoutine = StartCoroutine(AutoMoveTo(direction));
     }
 
-    protected virtual void StopMove()
+    public virtual void StopMove()
     {
         if(moveRoutine != null)
         {
@@ -51,9 +51,12 @@ public abstract class MoveObject : MonoBehaviour
 
     private IEnumerator AutoMoveTo(Vector2 direction)
     {
-        Vector2 start = transform.position;
-        rigidBody2D.MovePosition(start + direction * velocity * Time.deltaTime);
-        yield return null;
+        while (true)
+        {
+            Vector2 start = transform.position;
+            rigidBody2D.MovePosition(start + direction * velocity * Time.deltaTime);
+            yield return null;
+        }
     }
 
     protected virtual void Move(Vector2 direction)

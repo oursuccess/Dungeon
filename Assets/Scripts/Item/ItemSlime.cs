@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ItemSlime : Item
+public class ItemSlime : Item, IHandlePlayerHit
 {
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -23,5 +23,11 @@ public class ItemSlime : Item
     private void OnDisable()
     {
         transform.rotation = Quaternion.identity;
+    }
+
+    public void OnPlayerHit(Player player)
+    {
+        var playerCollider = player.gameObject.GetComponent<BoxCollider2D>();
+        Physics2D.IgnoreCollision(playerCollider, gameObject.GetComponent<BoxCollider2D>());
     }
 }

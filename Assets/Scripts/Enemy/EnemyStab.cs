@@ -22,11 +22,12 @@ public class EnemyStab : Enemy, IHandlePlayerSought
         player.Dead();
     }
 
-    public override void OnPlayerHit()
+    public override void OnPlayerHit(Player player)
     {
+        player.Dead();
     }
 
-    public void OnPlayerSought()
+    public void OnPlayerSought(Player player)
     {
         Debug.Log("he saw me!");
     }

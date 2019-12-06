@@ -4,5 +4,5 @@ using UnityEngine;
 
 interface IHandlePlayerSought
 {
-    void OnPlayerSought();
+    void OnPlayerSought(Player player);
 }

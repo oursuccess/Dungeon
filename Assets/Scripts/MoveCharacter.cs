@@ -1,14 +1,15 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MoveCharacter : MoveObject
+public abstract class MoveCharacter : MoveObject
 {
     [SerializeField]
     protected float sight = 1;
     [SerializeField]
     protected LayerMask layer;
-    Animator animator;
+    protected Animator animator;
 
     protected override void Start()
     {
@@ -19,6 +20,7 @@ public class MoveCharacter : MoveObject
 
     protected override void SimpleAutoMove(Vector2 direction)
     {
+        animator.SetBool("Moving", true);
         animator.SetFloat("Horizontal", direction.x);
         animator.SetFloat("Vertical", direction.y);
 
@@ -28,6 +30,26 @@ public class MoveCharacter : MoveObject
     protected override void Update()
     {
         base.Update();
+    }
+
+    public override void StopMove()
+    {
+        StopMoveAnimation();
+        base.StopMove();
+    }
+
+    public virtual void Dead()
+    {
+        StopMove();
+
+        animator.SetBool("Dead", true);
+    }
+
+    protected virtual void StopMoveAnimation()
+    {
+        animator.SetBool("Moving", false);
+        animator.SetFloat("Horizontal", 0f);
+        animator.SetFloat("Vertical", 0f);
     }
 
     protected bool Find(Vector2 direction, LayerMask layer, out RaycastHit2D hit)

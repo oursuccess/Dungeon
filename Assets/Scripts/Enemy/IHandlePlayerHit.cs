@@ -4,5 +4,5 @@ using UnityEngine;
 
 interface IHandlePlayerHit 
 {
-    void OnPlayerHit();
+    void OnPlayerHit(Player player);
 }
