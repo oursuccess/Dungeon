@@ -4,24 +4,19 @@ using UnityEngine;
 
 public class ItemBat : Item, IHandlePlayerHit 
 {
-    private void OnDisable()
-    {
-        Debug.Log("disable");
-    }
-    void Start()
-    {
-        Debug.Log("start");
-        StartCoroutine(SmoothMoveTo(new Vector2(1, 1)));
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        Debug.Log("enter");
-    }
     public void OnPlayerHit(Player player)
     {
         player.StopMove();
-        StartCoroutine(SmoothMoveTo(new Vector2(1, 1)));
+        Debug.Log(player.transform.parent);
+        player.transform.parent = transform;
+        Coroutine routineMove = StartCoroutine(SmoothMoveTo(new Vector2(1, 1)));
+
+        Invoke("ResetPlayer", 3f);
+    }
+
+    private void ResetPlayer(Player player)
+    {
+        player.transform.parent = null;
         player.StartMove();
     }
 
