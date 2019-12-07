@@ -960,9 +960,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2092401879}
-  - component: {fileID: 2092401881}
   - component: {fileID: 2092401880}
   - component: {fileID: 2092401882}
+  - component: {fileID: 2092401881}
   - component: {fileID: 2092401883}
   m_Layer: 0
   m_Name: ItemBat
@@ -1057,7 +1057,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.5, y: 0.5}
+  m_Size: {x: 0.48, y: 0.48}
   m_EdgeRadius: 0
 --- !u!95 &2092401882
 Animator:
@@ -1087,7 +1087,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2092401878}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5b2ceb8028664b24fa67256efa96ca06, type: 3}
+  m_Script: {fileID: 11500000, guid: bd8c63231b1c0b54aa619cf0a36e3413, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &4136703600317413070
