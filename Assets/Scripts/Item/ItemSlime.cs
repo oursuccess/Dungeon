@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ItemSlime : Item, IHandlePlayerHit
+public class ItemSlime : Item, IHandlePlayerHit, IEffect
 {
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -12,7 +12,7 @@ public class ItemSlime : Item, IHandlePlayerHit
         }
     }
 
-    public override void Effect(GameObject target)
+    public void Effect(GameObject target)
     {
         transform.position = target.transform.position;
         //应该由对象选择如何失效

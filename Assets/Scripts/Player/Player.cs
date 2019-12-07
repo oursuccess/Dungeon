@@ -29,6 +29,11 @@ public class Player : MoveCharacter
         base.StopMove();
     }
 
+    public void StartMove()
+    {
+        SimpleAutoMove(moveDir);
+    }
+
     public override void Dead()
     {
         base.Dead();
@@ -42,7 +47,7 @@ public class Player : MoveCharacter
     }
 
     protected override void OnCollisionEnter2D(Collision2D collision)
-    { 
+    {
         IHandlePlayerHit hit = collision.transform.GetComponent<IHandlePlayerHit>();
         if (hit != null)
         {

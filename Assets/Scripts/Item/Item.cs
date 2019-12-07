@@ -40,5 +40,4 @@ public abstract class Item : MonoBehaviour
         }
     }
 
-    public abstract void Effect(GameObject target);
 }
