@@ -45,6 +45,7 @@ public abstract class MoveObject : MonoBehaviour
     {
         if(moveRoutine != null)
         {
+            Debug.Log("stop");
             StopCoroutine(moveRoutine);
         }
     }

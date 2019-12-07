@@ -4,18 +4,32 @@ using UnityEngine;
 
 public class ItemBat : Item, IHandlePlayerHit 
 {
-    public void OnPlayerHit(Player player)
-    {
-        player.StopMove();
-        Debug.Log(player.transform.parent);
-        player.transform.parent = transform;
-        Coroutine routineMove = StartCoroutine(SmoothMoveTo(new Vector2(1, 1)));
+    private Player player;
+    private Animator animator;
 
-        Invoke("ResetPlayer", 3f);
+    void Start()
+    {
+        animator = gameObject.GetComponent<Animator>();
+        animator.enabled = false;
+    }
+    public void OnPlayerHit(Player p)
+    {
+        animator.enabled = true;
+
+        player = p;
+
+        player.StopMove();
+        player.transform.parent = transform;
+        Physics2D.IgnoreCollision(player.gameObject.GetComponent<BoxCollider2D>(), gameObject.GetComponent<BoxCollider2D>());
+
+        StartCoroutine(SmoothMoveTo(new Vector2(1, 1)));
+
+        Invoke("ResetPlayerNBat", 2.4f);
     }
 
-    private void ResetPlayer(Player player)
+    private void ResetPlayerNBat()
     {
+        animator.enabled = false;
         player.transform.parent = null;
         player.StartMove();
     }

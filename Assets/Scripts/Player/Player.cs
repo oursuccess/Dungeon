@@ -7,10 +7,13 @@ public class Player : MoveCharacter
 {
     [SerializeField]
     private Text dieText;
+
+    private bool canMove;
     protected override void Start()
     {
         base.Start();
 
+        canMove = true;
         animator.enabled = false;
         moveDir = Vector2.right;
     }
@@ -26,12 +29,14 @@ public class Player : MoveCharacter
 
     public override void StopMove()
     {
+        canMove = false;
         base.StopMove();
     }
 
     public void StartMove()
     {
-        SimpleAutoMove(moveDir);
+        canMove = true;
+        rigidBody2D.gravityScale = 1;
     }
 
     public override void Dead()
@@ -53,7 +58,7 @@ public class Player : MoveCharacter
         {
             hit.OnPlayerHit(this);
         }
-        else if (collision.transform.name.Contains("Ground"))
+        else if (canMove && collision.transform.name.Contains("Ground"))
         {
             animator.enabled = true;
             SimpleAutoMove(moveDir);

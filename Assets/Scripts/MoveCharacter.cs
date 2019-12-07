@@ -35,6 +35,7 @@ public abstract class MoveCharacter : MoveObject
     public override void StopMove()
     {
         StopMoveAnimation();
+
         base.StopMove();
     }
 
@@ -50,6 +51,7 @@ public abstract class MoveCharacter : MoveObject
         animator.SetBool("Moving", false);
         animator.SetFloat("Horizontal", 0f);
         animator.SetFloat("Vertical", 0f);
+        animator.enabled = false;
     }
 
     protected bool Find(Vector2 direction, LayerMask layer, out RaycastHit2D hit)
