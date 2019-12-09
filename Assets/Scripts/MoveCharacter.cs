@@ -20,7 +20,7 @@ public abstract class MoveCharacter : MoveObject
 
     protected override void SimpleAutoMove(Vector2 direction)
     {
-        animator.SetBool("Moving", true);
+        animator.SetBool("Running", true);
         animator.SetFloat("Horizontal", direction.x);
         animator.SetFloat("Vertical", direction.y);
 
@@ -48,10 +48,9 @@ public abstract class MoveCharacter : MoveObject
 
     protected virtual void StopMoveAnimation()
     {
-        animator.SetBool("Moving", false);
+        animator.SetBool("Running", false);
         animator.SetFloat("Horizontal", 0f);
         animator.SetFloat("Vertical", 0f);
-        animator.enabled = false;
     }
 
     protected bool Find(Vector2 direction, LayerMask layer, out RaycastHit2D hit)

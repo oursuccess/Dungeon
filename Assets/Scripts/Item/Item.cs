@@ -4,6 +4,8 @@ using UnityEngine;
 
 public abstract class Item : MonoBehaviour
 {
+    public delegate void ItemDragedEvent(Item item);
+    public event ItemDragedEvent OnItemDraged;
 
     private void OnMouseEnter()
     {
@@ -28,6 +30,8 @@ public abstract class Item : MonoBehaviour
         {
             Vector2 newPos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y));
             transform.position = newPos;
+
+            OnItemDraged?.Invoke(this);
         }
     }
 

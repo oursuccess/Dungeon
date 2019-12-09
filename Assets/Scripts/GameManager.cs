@@ -1,9 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
+    [SerializeField]
+    private Text dieText;
+
     private GameManager() { }
     public static GameManager Instance;
     // Start is called before the first frame update
@@ -22,9 +26,13 @@ public class GameManager : MonoBehaviour
 
     }
 
-    // Update is called once per frame
-    void Update()
+    public void GameOver()
     {
-        
+        ShowDieMessage();
     }
+    private void ShowDieMessage()
+    {
+        dieText.gameObject.SetActive(true);
+    }
+
 }

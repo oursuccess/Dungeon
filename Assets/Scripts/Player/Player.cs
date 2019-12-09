@@ -1,17 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class Player : MoveCharacter
 {
-    [SerializeField]
-    private Text dieText;
-
+    private float animSizeXRatio = 0.1f;
+    private float animSizeYRatio = 0.1f;
+   
     private bool canMove;
     protected override void Start()
     {
         base.Start();
+
+        //to clean
+        gameObject.transform.localScale = new Vector2(animSizeXRatio, animSizeYRatio);
 
         canMove = true;
         animator.enabled = false;
@@ -43,12 +45,13 @@ public class Player : MoveCharacter
     {
         base.Dead();
 
-        Invoke("ShowDieMessage", 3f);
+        //to enable
+        //Invoke("GameOver", 3f);
     }
 
-    private void ShowDieMessage()
+    private void GameOver()
     {
-        dieText.gameObject.SetActive(true);
+        GameManager.Instance.GameOver();
     }
 
     protected override void OnCollisionEnter2D(Collision2D collision)
