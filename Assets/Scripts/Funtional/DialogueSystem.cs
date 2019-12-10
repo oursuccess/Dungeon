@@ -45,20 +45,41 @@ public class DialogueSystem : MonoBehaviour
                     }
                     //the only difference with other three
                     string curText = match.Value;
-                    while (curText != null && curText.Length != 0 && Regex.Match(curText, "<.+>").Success && Regex.Match(curText, "</.+>").Success)
+                    while (curText != null && curText.Length != 0 && Regex.Match(curText, "<.+?>").Success && Regex.Match(curText, "</.+?>").Success)
                     {
                         Match matchBegin = Regex.Match(curText, @"<.+?>");
                         Match matchEnd = Regex.Match(curText, @"</.+?>");
+                        
+                        for(int i = 0; i < matchBegin.Index; ++i)
+                        {
+                            while(!Input.anyKeyDown && time <= wordDelay)
+                            {
+                                time += Time.deltaTime;
+                                yield return null;
+                            }
+                            dialogueText.text += curText[i];
+                            time = 0f;
+                        }
                         dialogueText.text += matchBegin.Value;
                         dialogueText.text += matchEnd.Value;
 
-                        string restText = curText.Remove(matchBegin.Index, matchBegin.Length);
+                        string restText = curText.Remove(0, matchBegin.Index + matchBegin.Length);
 
-                        int textLength = matchEnd.Index - matchBegin.Length;
+                        int textLength = matchEnd.Index - matchBegin.Index - matchBegin.Length;
                         for (int i = 0; i < textLength; ++i)
                         {
-                            dialogueText.text.Insert(dialogueText.text.Length - matchEnd.Length, restText[i].ToString());
+                            while(!Input.anyKeyDown && time <= wordDelay)
+                            {
+                                time += Time.deltaTime;
+                                yield return null;
+                            }
+
+                            dialogueText.text = dialogueText.text.Insert(dialogueText.text.Length - matchEnd.Length, restText[i].ToString());
+                            time = 0f;
                         }
+
+                        curText = curText.Remove(0, matchEnd.Index + matchEnd.Length);
+                        yield return null;
                     }
 
                     for (int i = match.Index + match.Length; i < line.Length; ++i)
