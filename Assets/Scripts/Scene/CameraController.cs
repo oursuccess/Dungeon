@@ -7,6 +7,10 @@ public class CameraController : MonoBehaviour
     [SerializeField]
     private GameObject target;
     private Vector3 offset;
+    public float xSizeMin { get; private set;}
+    public float xSizeMax { get; private set;}
+    public float ySizeMin { get; private set; }
+    public float ySizeMax { get; private set; }
 
     public delegate void CameraPositionChange();
     public event CameraPositionChange OnCameraPositionChanged;
@@ -16,10 +20,21 @@ public class CameraController : MonoBehaviour
         offset = transform.position - target.transform.position;
 
         target.GetComponent<MoveObject>().OnMoving += ChangeCameraPosition;
+        
+        xSizeMin = Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 0)).x;
+        xSizeMax = Camera.main.ViewportToWorldPoint(new Vector3(1, 0, 0)).x;
+        ySizeMin = Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 0)).y;
+        ySizeMax = Camera.main.ViewportToWorldPoint(new Vector3(0, 1, 0)).y;
+
     }
 
     void ChangeCameraPosition()
     {
+        xSizeMin = Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 0)).x;
+        xSizeMax = Camera.main.ViewportToWorldPoint(new Vector3(1, 0, 0)).x;
+        ySizeMin = Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 0)).y;
+        ySizeMax = Camera.main.ViewportToWorldPoint(new Vector3(0, 1, 0)).y;
+
         transform.position = target.transform.position + offset;
         OnCameraPositionChanged?.Invoke();
     }

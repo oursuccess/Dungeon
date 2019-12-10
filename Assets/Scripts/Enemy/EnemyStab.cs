@@ -4,17 +4,9 @@ using UnityEngine;
 
 public class EnemyStab : Enemy, IHandlePlayerSought
 {
-    // Start is called before the first frame update
     protected override void Start()
     {
-
         base.Start();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     public override void Effect(Player player)
@@ -24,11 +16,10 @@ public class EnemyStab : Enemy, IHandlePlayerSought
 
     public override void OnPlayerHit(Player player)
     {
-        player.Dead();
+        Effect(player);
     }
 
     public void OnPlayerSought(Player player)
     {
-        Debug.Log("he saw me!");
     }
 }

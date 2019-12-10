@@ -56,6 +56,11 @@ public abstract class MoveCharacter : MoveObject
     protected bool Find(Vector2 direction, LayerMask layer, out RaycastHit2D hit)
     {
         Vector2 start = transform.position;
+        return Find(start, direction, layer,out hit);
+    }
+
+    protected bool Find(Vector2 start, Vector2 direction, LayerMask layer, out RaycastHit2D hit)
+    {
         Vector2 end = start + direction * sight;
         hit = Physics2D.Linecast(transform.position, end, layer);
         if(hit.transform != null)
