@@ -7,7 +7,6 @@ public class Player : MoveCharacter
     private float animSizeXRatio = 0.1f;
     private float animSizeYRatio = 0.1f;
    
-    private bool canMove;
     protected override void Start()
     {
         base.Start();
@@ -35,7 +34,7 @@ public class Player : MoveCharacter
         base.StopMove();
     }
 
-    public void StartMove()
+    public override void StartMove()
     {
         canMove = true;
         rigidBody2D.gravityScale = 1;

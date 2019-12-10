@@ -11,14 +11,45 @@ public class Guide : MonoBehaviour
     [SerializeField]
     protected Text textUI;
 
-    void Start()
+    protected virtual void Start()
     {
         dialogue = new DialogueSystem(text, textUI);
     }
 
-    protected virtual void TextShow(float wordDelay = 0.2f, float lineDelay = 3f)
+    public virtual void GuideStart(params MoveObject[] moveobj)
     {
-        //dialogue.Show(wordDelay, lineDelay);
+        GuideStart(0.2f, 3f, moveobj);
+    }
+
+    public virtual void GuideStart(float wordDelay = 0.2f, float lineDelay = 3f, params MoveObject[] moveobj)
+    {
+        StartCoroutine(TextShow(wordDelay, lineDelay, moveobj));
+    }
+
+    protected virtual IEnumerator TextShow(float wordDelay = 0.2f, float lineDelay = 3f, params MoveObject[] moveobj)
+    {
+        if(moveobj != null)
+        {
+            foreach(var obj in moveobj)
+            {
+                obj.StopMove();
+            }
+        }
+
+        dialogue.Show(wordDelay, lineDelay);
+        while (!Input.GetMouseButtonDown(0))
+        {
+            yield return null;
+        }
+
+        TextClose();
+        if(moveobj != null) 
+        {
+            foreach(var obj in moveobj)
+            {
+                obj.StartMove();
+            }
+        }
     }
 
     protected virtual void TextClose()

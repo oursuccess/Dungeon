@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class MoveGuide : Guide 
 {
-    void Start()
+    protected override void Start()
     {
-        transform.position = GameObject.Find("Player").transform.position;
+        transform.position = GameObject.Find("Player").transform.position + new Vector3(3f ,0);
+
+        base.Start();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -15,16 +17,10 @@ public class MoveGuide : Guide
         if(player != null)
         {
             //应该是游戏暂停运行
-            player.StopMove();
+            Physics2D.IgnoreCollision(collision, gameObject.GetComponent<BoxCollider2D>());
 
-            TextShow();
-
-            if(Input.anyKeyDown)
-            {
-                Debug.Log("down");
-                TextClose();
-                player.StartMove();
-            }
+            GuideStart(1f, 3f, player);
         }
     }
+
 }

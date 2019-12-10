@@ -10,6 +10,7 @@ public abstract class MoveObject : MonoBehaviour
     protected float moveDistance = 1;
     [SerializeField]
     protected float velocity = 1;
+    public bool canMove;
 
     protected Vector2 moveDir;
 
@@ -44,11 +45,16 @@ public abstract class MoveObject : MonoBehaviour
         moveRoutine = StartCoroutine(AutoMoveTo(direction));
     }
 
+    public virtual void StartMove()
+    {
+        canMove = true;
+    }
+
     public virtual void StopMove()
     {
         if(moveRoutine != null)
         {
-            Debug.Log("stop");
+            canMove = false;
             StopCoroutine(moveRoutine);
         }
     }

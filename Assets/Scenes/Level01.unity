@@ -157,7 +157,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   text: {fileID: 4900000, guid: 3a1503b392ee79b42b3e40cdefb55c12, type: 3}
-  textUI: {fileID: 0}
+  textUI: {fileID: 872408834}
 --- !u!61 &200135408
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -594,7 +594,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &872408833
 RectTransform:
   m_ObjectHideFlags: 0
