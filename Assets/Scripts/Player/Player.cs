@@ -9,17 +9,14 @@ public class Player : MoveCharacter
     private float animSizeYRatio = 0.1f;
 
     [SerializeField]
-    private Image emote;
-    private Image playerEmote;
+    private GameObject emote;
 
     protected override void Start()
     {
         base.Start();
-
         if(emote != null)
         {
-            playerEmote = Instantiate<Image>(emote, emote.transform.parent);
-            playerEmote.gameObject.SetActive(false);
+            emote.SetActive(false);
         }
 
         //to clean
@@ -32,20 +29,6 @@ public class Player : MoveCharacter
 
     protected override void Update()
     {
-        RaycastHit2D hit;
-        if (Find(moveDir, layer, out hit) || Find(new Vector3(transform.position.x, Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 0)).y + 0.8f),moveDir, layer, out hit))
-        {
-
-            //看到敌人后的表情变化
-            playerEmote.transform.position = transform.position;
-            playerEmote.gameObject.SetActive(true);
-
-            var hitTarget = hit.transform.gameObject.GetComponent<IHandlePlayerSought>();
-            if(hitTarget != null)
-            {
-                hitTarget.OnPlayerSought(this);
-            }
-        }
     }
 
     protected override void SimpleAutoMove(Vector2 direction)
@@ -67,6 +50,7 @@ public class Player : MoveCharacter
 
     public override void Dead()
     {
+        emote.SetActive(false);
         base.Dead();
 
         //to enable
@@ -75,7 +59,7 @@ public class Player : MoveCharacter
 
     private void GameOver()
     {
-        //GameManager.Instance.GameOver();
+        GameManager.Instance.GameOver();
     }
 
     public void Won()
@@ -91,7 +75,7 @@ public class Player : MoveCharacter
 
     protected override void OnCollisionEnter2D(Collision2D collision)
     {
-        IHandlePlayerHit hit = collision.transform.GetComponent<IHandlePlayerHit>();
+        IHandlePlayerHit hit = collision.gameObject.GetComponent<IHandlePlayerHit>();
         if (hit != null)
         {
             hit.OnPlayerHit(this);
@@ -103,5 +87,24 @@ public class Player : MoveCharacter
         }
 
         base.OnCollisionEnter2D(collision);
+    }
+
+    protected void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(emote != null)
+        {
+            emote.SetActive(true);
+            Invoke("EmoteDeactive", 2f);
+        }
+        IHandlePlayerSought hit = collision.gameObject.GetComponent<IHandlePlayerSought>();
+        if(hit != null)
+        {
+            hit.OnPlayerSought(this);
+        }
+    }
+
+    private void EmoteDeactive()
+    {
+        emote.SetActive(false);
     }
 }

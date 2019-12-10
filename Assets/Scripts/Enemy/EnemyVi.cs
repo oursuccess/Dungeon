@@ -2,16 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyStab : Enemy, IHandlePlayerSought
+public class EnemyVi : Enemy, IHandlePlayerSought
 {
+    private Animator animator;
     protected override void Start()
     {
-        transform.position = new Vector2(transform.position.x, Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 0)).y + 0.7f);
+        animator = transform.GetComponent<Animator>();
+
         base.Start();
     }
 
     public override void Effect(Player player)
     {
+        animator.SetTrigger("Attack");
+
         player.Dead();
     }
 
@@ -22,5 +26,7 @@ public class EnemyStab : Enemy, IHandlePlayerSought
 
     public void OnPlayerSought(Player player)
     {
+        animator.SetBool("Idle", true);
     }
+
 }

@@ -42,6 +42,6 @@ public class GameManager : MonoBehaviour
     public void ToNextStage()
     {
         Stage++;
-        SceneManager.LoadScene("Level" + Stage);
+        SceneManager.LoadScene("Level" + Stage.ToString().PadLeft(2, '0'));
     }
 }

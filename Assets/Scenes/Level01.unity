@@ -625,6 +625,7 @@ MonoBehaviour:
   layer:
     serializedVersion: 2
     m_Bits: 2048
+  emote: {fileID: 0}
 --- !u!61 &1413951068
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -709,6 +710,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb1f30f4e6045a349a3b6c822b7df67d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  xPos: 27
 --- !u!1 &1662869748
 GameObject:
   m_ObjectHideFlags: 0
@@ -999,6 +1001,11 @@ PrefabInstance:
       propertyPath: textUI
       value: 
       objectReference: {fileID: 872408834}
+    - target: {fileID: 2171796711378435595, guid: f0e1d4f192ac6e944a9ec955265a3cd7,
+        type: 3}
+      propertyPath: m_Size.y
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f0e1d4f192ac6e944a9ec955265a3cd7, type: 3}
 --- !u!1001 &5246444063965398585
