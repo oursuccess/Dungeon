@@ -4,15 +4,23 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    // Start is called before the first frame update
+    [SerializeField]
+    private GameObject target;
+    private Vector3 offset;
+
+    public delegate void CameraPositionChange();
+    public event CameraPositionChange OnCameraPositionChanged;
+
     void Start()
     {
-        
+        offset = transform.position - target.transform.position;
+
+        target.GetComponent<MoveObject>().OnMoving += ChangeCameraPosition;
     }
 
-    // Update is called once per frame
-    void Update()
+    void ChangeCameraPosition()
     {
-        
+        transform.position = target.transform.position + offset;
+        OnCameraPositionChanged?.Invoke();
     }
 }

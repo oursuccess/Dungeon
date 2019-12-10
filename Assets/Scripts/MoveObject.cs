@@ -20,6 +20,9 @@ public abstract class MoveObject : MonoBehaviour
 
     protected Rigidbody2D rigidBody2D;
 
+    public delegate void MovingDel();
+    public event MovingDel OnMoving;
+
     // Start is called before the first frame update
     protected virtual void Start()
     {
@@ -56,6 +59,7 @@ public abstract class MoveObject : MonoBehaviour
         {
             Vector2 start = transform.position;
             rigidBody2D.MovePosition(start + direction * velocity * Time.deltaTime);
+            OnMoving?.Invoke();
             yield return null;
         }
     }
@@ -81,6 +85,8 @@ public abstract class MoveObject : MonoBehaviour
             rigidBody2D.MovePosition(target);
             start = transform.position;
             distanceNow = (end - start).sqrMagnitude;
+
+            OnMoving?.Invoke();
             yield return null;
         }
         yield return true;

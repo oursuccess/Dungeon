@@ -7,17 +7,15 @@ public class ItemController : MonoBehaviour
 {
     public class itemAttribute
     {
-        public itemAttribute(float xPos, float yPos, int num = 1, Text numT = null)
+        public itemAttribute(int index, int num = 1, Text numT = null)
         {
-            this.xPos = xPos;
-            this.yPos = yPos;
-            this.numT = numT;
+            this.index = index;
             this.num = num;
+            this.numT = numT;
             this.numT.text = num.ToString();
         }
+        public int index; 
         public int num;
-        public float xPos { get; private set; }
-        public float yPos { get; private set; }
         public Text numT;
 
         public void changeNum(int addition)
@@ -29,7 +27,9 @@ public class ItemController : MonoBehaviour
 
     [SerializeField]
     private GameObject[] itemObjects;
-    private Dictionary<string, itemAttribute> items;
+    private Dictionary<string, itemAttribute> itemControllerDics;
+    private List<Item> spawnedItems;
+    private List<Item> displayingItems;
 
     [SerializeField]
     private float xInterD = 1;
@@ -38,12 +38,20 @@ public class ItemController : MonoBehaviour
 
     [SerializeField]
     private Text numText;
+
+    private Camera cam;
+    private float xBegin;
+    private float yBegin;
    
     void Start()
     {
-        float xBegin = Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 0)).x + 1;
-        float yBegin = Camera.main.ViewportToWorldPoint(new Vector3(0, 1, 0)).y - 1;
-        items = new Dictionary<string, itemAttribute>();
+        cam = Camera.main;
+      
+        itemControllerDics = new Dictionary<string, itemAttribute>();
+        spawnedItems = new List<Item>();
+        displayingItems = new List<Item>();
+
+        HandleCameraPosition();
 
         int i = 0;
         foreach(var item in itemObjects)
@@ -51,6 +59,7 @@ public class ItemController : MonoBehaviour
             float xPos = xBegin + xInterD * i;
             float yPos = yBegin;
 
+            //正常应该是图标
             var obj = Instantiate(item, new Vector2(xPos, yPos), Quaternion.identity);
             obj.name = item.name;
             var it = obj.GetComponent<Item>();
@@ -61,36 +70,67 @@ public class ItemController : MonoBehaviour
                 numT.name = it.name + "Text";
 
                 //To Clean
-                numT.transform.position = Camera.main.WorldToScreenPoint(new Vector3(xPos + xInterD / 4, yPos - xInterD / 4));
+                numT.transform.position = cam.WorldToScreenPoint(new Vector3(xPos + xInterD / 4, yPos - xInterD / 4));
                 numT.gameObject.SetActive(true);
 
+
                 //第3个参数可能每个关卡不同
-                items.Add(it.name, new itemAttribute(xPos, yPos, 2, numT)) ;
+                itemControllerDics.Add(it.name, new itemAttribute(i , 2, numT)) ;
+                displayingItems.Add(it);
 
                 it.OnItemDraged += OnItemDraged;
             }
             ++i;
         }
+        if(i != 0)
+        {
+            CameraController ccl = cam.GetComponent<CameraController>();
+            ccl.OnCameraPositionChanged += OnCameraPositionChanged;
+        }
+    }
+
+    private void OnCameraPositionChanged()
+    {
+        HandleCameraPosition();
+        foreach (var item in displayingItems)
+        {
+            var attr = itemControllerDics[item.name];
+            float xPos = xBegin + attr.index * xInterD;
+            float yPos = yBegin;
+
+            item.transform.position = new Vector3(xPos, yPos);
+            attr.numT.transform.position = cam.WorldToScreenPoint(new Vector3(xPos + xInterD / 4, yPos - xInterD / 4));
+        }
+    }
+
+    private void HandleCameraPosition()
+    {
+        xBegin = cam.ViewportToWorldPoint(new Vector3(0, 0, 0)).x + 1;
+        yBegin = cam.ViewportToWorldPoint(new Vector3(0, 1, 0)).y - 1;
     }
 
     private void OnItemDraged(Item item)
     {
-        if (items.ContainsKey(item.name))
+        if (itemControllerDics.ContainsKey(item.name))
         {
-            var attr = items[item.name];
+            var attr = itemControllerDics[item.name];
+            float xPos = xBegin + attr.index * xInterD;
+            float yPos = yBegin;
 
-            if((item.transform.position - new Vector3(attr.xPos, attr.yPos)).sqrMagnitude >= dragD)
+            if((item.transform.position - new Vector3(xPos , yPos)).sqrMagnitude >= dragD)
             {
+                displayingItems.Remove(item);
+                spawnedItems.Add(item);
                 item.OnItemDraged -= OnItemDraged;
 
-                var obj = Instantiate(item.gameObject, new Vector2(attr.xPos, attr.yPos), Quaternion.identity);
+                var obj = Instantiate(item.gameObject, new Vector2(xPos, yPos), Quaternion.identity);
                 obj.name = item.name;
                 obj.GetComponent<Item>().OnItemDraged += OnItemDraged;
 
                 attr.changeNum(-1);
                 if (attr.num <= 0)
                 {
-                    items.Remove(item.name);
+                    itemControllerDics.Remove(item.name);
                 }
             }
         }

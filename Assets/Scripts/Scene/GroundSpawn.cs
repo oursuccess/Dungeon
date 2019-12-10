@@ -11,7 +11,7 @@ public class GroundSpawn : MonoBehaviour
     {
         Camera camera = Camera.main;
         float xMin = camera.ViewportToWorldPoint(new Vector3(0, 0, 0)).x;
-        float xMax = camera.ViewportToWorldPoint(new Vector3(1, 0, 0)).x;
+        float xMax = camera.ViewportToWorldPoint(new Vector3(1, 0, 0)).x * 10;
         float bottom = camera.ViewportToWorldPoint(new Vector3(0, 0, 0)).y + 0.5f;
         GameObject ground = grounds[0];
         float xSize = ground.GetComponent<BoxCollider2D>().size.x;
