@@ -125,12 +125,14 @@ public class ItemController : MonoBehaviour
 
                 var obj = Instantiate(item.gameObject, new Vector2(xPos, yPos), Quaternion.identity);
                 obj.name = item.name;
-                obj.GetComponent<Item>().OnItemDraged += OnItemDraged;
+                var it = obj.GetComponent<Item>();
+                it.OnItemDraged += OnItemDraged;
+                displayingItems.Add(it);
 
                 attr.changeNum(-1);
                 if (attr.num <= 0)
                 {
-                    itemControllerDics.Remove(item.name);
+                    it.enabled = false;
                 }
             }
         }
