@@ -9,27 +9,31 @@ public class DialogueSystem : MonoBehaviour
     private DialogueContent dialogue;
     public Text dialogueText;
 
+    public delegate void TextShowoff();
+    public event TextShowoff OnTextShowOff;
+
     public DialogueSystem(TextAsset text, Text textUI = null)
     {
         dialogue = new DialogueContent(text);
         dialogueText = textUI;
     }
-
-    public virtual void Show(float wordDelay = 0.2f, float lineDelay = 3f)
+  
+    public IEnumerator Show(float wordDelay = 0.2f, float lineDelay = 3f)
     {
         dialogueText.gameObject.SetActive(true);
         float time = 0f;
         foreach (var line in dialogue.textContent)
         {
-            if(wordDelay != 0)
+            if(wordDelay != 0f)
             {
                 for (int i = 0; i < line.Length; ++i)
                 {
-                    dialogueText.text = line.Substring(0, i);
                     while (!Input.anyKeyDown && time <= wordDelay)
                     {
                         time += Time.deltaTime;
+                        yield return null;
                     }
+                    dialogueText.text = line.Substring(0, i);
                     time = 0f;
                 }
             }
@@ -37,12 +41,19 @@ public class DialogueSystem : MonoBehaviour
             {
                 dialogueText.text = line;
             }
-            while (!Input.anyKeyDown && time <= lineDelay)
+            while (time <= lineDelay)
             {
                 time += Time.deltaTime;
+                if (time >= 0.3f && Input.anyKeyDown)
+                {
+                    break;
+                }
+                yield return null;
             }
             time = 0f;
         }
+        OnTextShowOff?.Invoke();
+        yield return true;
     }
 
     public virtual void Close()
