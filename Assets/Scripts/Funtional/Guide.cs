@@ -6,17 +6,36 @@ using UnityEngine.UI;
 public class Guide : MonoBehaviour
 {
     DialogueSystem dialogue;
+
     [SerializeField]
     protected TextAsset text;
+
+    protected GameObject guide;
+
+    #region ToAssignVar
     [SerializeField]
     protected Text textUI;
+    [SerializeField]
+    protected Image faceImage;
+    [SerializeField]
+    protected Image bgImage;
+    #endregion
 
     private MoveObject[] invokeMoveObjects;
 
   
     protected virtual void Start()
     {
-        dialogue = new DialogueSystem(text, textUI);
+        guide = CrossCanvasController.Instance.Guide;
+
+        if(textUI != null && faceImage != null && bgImage != null)
+        {
+            dialogue = new DialogueSystem(text, textUI, faceImage, bgImage);
+        }
+        else
+        {
+            dialogue = new DialogueSystem(text, guide);
+        }
     }
 
     public virtual void GuideStart(params MoveObject[] invokeMoveObjects)

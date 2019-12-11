@@ -1,14 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField]
-    private Text dieText;
-
     public int Stage { get; private set; }
 
     private GameManager() { }
@@ -36,7 +32,7 @@ public class GameManager : MonoBehaviour
     }
     private void ShowDieMessage()
     {
-        dieText.gameObject.SetActive(true);
+        CrossCanvasController.Instance.DieText.SetActive(true);
     }
 
     public void ToNextStage()
