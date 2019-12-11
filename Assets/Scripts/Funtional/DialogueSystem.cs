@@ -62,132 +62,156 @@ public class DialogueSystem : MonoBehaviour
         int lineNum = 0;
         foreach (var line in dialogue.textContent)
         {
-            #region ShowNormalText
-            if(wordDelay != 0f)
+            #region modifiedTag
+            //以#@开头的文本为高级文本
+            if (line.StartsWith("#@"))
             {
-                #region FoundRichTag
-                //若有富文本标签
-                Match match = Regex.Match(line, pattern);
-                if (match.Success)
+                var tags = Regex.Replace(line, @"\s" ,"").Substring(2).Split(',');
+                foreach(var tag in tags)
                 {
-                    //富文本之前正常播放
-                    for(int i = 0; i < match.Index; ++i)
+                    var pair = tag.Substring('=');
+                    if(pair.Length == 2)
                     {
-                        while (!Input.anyKeyDown && time <= wordDelay)
-                        {
-                            time += Time.deltaTime;
-                            yield return null;
-                        }
-                        dialogueText.text += line[i];
-                        time = 0f;
+                        var variable = pair[0];
+                        var property = pair[1];
                     }
-                    //富文本标签之中，先加入标签，然后逐步加入实际文字
-                    //在标签之中依次判断各个标签位置
-                    string curText = match.Value;
-                    while (curText != null && curText.Length != 0 && Regex.Match(curText, "<.+?>").Success && Regex.Match(curText, "</.+?>").Success)
+#if UNITY_EDITOR
+                    else
                     {
-                        //标签开始
-                        Match matchBegin = Regex.Match(curText, @"<.+?>");
-                        //标签结束
-                        Match matchEnd = Regex.Match(curText, @"</.+?>");
-                        
-                        //标签匹配前，正常的文本显示（两个标签之中可能不从0开始）
-                        for(int i = 0; i < matchBegin.Index; ++i)
+                        Debug.LogWarning("文本标签错误!\n " + line);
+                    }
+#endif
+                }
+            }
+            #endregion
+            #region ShowNormalText
+            else
+            {
+                //若字母出现没有时间间隔
+                if (wordDelay != 0f)
+                {
+                    #region FoundRichTag
+                    //若有富文本标签
+                    Match match = Regex.Match(line, pattern);
+                    if (match.Success)
+                    {
+                        //富文本之前正常播放
+                        for (int i = 0; i < match.Index; ++i)
                         {
-                            while(!Input.anyKeyDown && time <= wordDelay)
+                            while (!Input.anyKeyDown && time <= wordDelay)
                             {
                                 time += Time.deltaTime;
                                 yield return null;
                             }
-                            dialogueText.text += curText[i];
+                            dialogueText.text += line[i];
                             time = 0f;
                         }
-
-                        //标签开始，先加入标签
-                        dialogueText.text += matchBegin.Value;
-                        dialogueText.text += matchEnd.Value;
-
-                        //匹配标签内文字，首先找出去掉标签开头的文件
-                        string restText = curText.Remove(0, matchBegin.Index + matchBegin.Length);
-
-                        int textLength = matchEnd.Index - matchBegin.Index - matchBegin.Length;
-                        for (int i = 0; i < textLength; ++i)
+                        //富文本标签之中，先加入标签，然后逐步加入实际文字
+                        //在标签之中依次判断各个标签位置
+                        string curText = match.Value;
+                        while (curText != null && curText.Length != 0 && Regex.Match(curText, "<.+?>").Success && Regex.Match(curText, "</.+?>").Success)
                         {
-                            while(!Input.anyKeyDown && time <= wordDelay)
+                            //标签开始
+                            Match matchBegin = Regex.Match(curText, @"<.+?>");
+                            //标签结束
+                            Match matchEnd = Regex.Match(curText, @"</.+?>");
+
+                            //标签匹配前，正常的文本显示（两个标签之中可能不从0开始）
+                            for (int i = 0; i < matchBegin.Index; ++i)
+                            {
+                                while (!Input.anyKeyDown && time <= wordDelay)
+                                {
+                                    time += Time.deltaTime;
+                                    yield return null;
+                                }
+                                dialogueText.text += curText[i];
+                                time = 0f;
+                            }
+
+                            //标签开始，先加入标签
+                            dialogueText.text += matchBegin.Value;
+                            dialogueText.text += matchEnd.Value;
+
+                            //匹配标签内文字，首先找出去掉标签开头的文件
+                            string restText = curText.Remove(0, matchBegin.Index + matchBegin.Length);
+
+                            int textLength = matchEnd.Index - matchBegin.Index - matchBegin.Length;
+                            for (int i = 0; i < textLength; ++i)
+                            {
+                                while (!Input.anyKeyDown && time <= wordDelay)
+                                {
+                                    time += Time.deltaTime;
+                                    yield return null;
+                                }
+
+                                dialogueText.text = dialogueText.text.Insert(dialogueText.text.Length - matchEnd.Length, restText[i].ToString());
+                                time = 0f;
+                            }
+
+                            //继续匹配剩下的文本
+                            curText = curText.Remove(0, matchEnd.Index + matchEnd.Length);
+                            yield return null;
+                        }
+
+                        //匹配剩下的文本
+                        for (int i = match.Index + match.Length; i < line.Length; ++i)
+                        {
+                            while (!Input.anyKeyDown && time <= wordDelay)
                             {
                                 time += Time.deltaTime;
                                 yield return null;
                             }
-
-                            dialogueText.text = dialogueText.text.Insert(dialogueText.text.Length - matchEnd.Length, restText[i].ToString());
+                            dialogueText.text += line[i];
                             time = 0f;
                         }
-
-                        //继续匹配剩下的文本
-                        curText = curText.Remove(0, matchEnd.Index + matchEnd.Length);
-                        yield return null;
+                        #endregion
                     }
-
-                    //匹配剩下的文本
-                    for (int i = match.Index + match.Length; i < line.Length; ++i)
+                    else
                     {
-                        while (!Input.anyKeyDown && time <= wordDelay)
+                        //没有标签的文本
+                        for (int i = 0; i < line.Length; ++i)
                         {
-                            time += Time.deltaTime;
-                            yield return null;
+                            while (!Input.anyKeyDown && time <= wordDelay)
+                            {
+                                time += Time.deltaTime;
+                                yield return null;
+                            }
+                            dialogueText.text += line[i];
+                            time = 0f;
                         }
-                        dialogueText.text += line[i];
-                        time = 0f;
                     }
-                    #endregion
                 }
                 else
                 {
-                    //没有标签的文本
-                    for (int i = 0; i < line.Length; ++i)
-                    {
-                        while (!Input.anyKeyDown && time <= wordDelay)
-                        {
-                            time += Time.deltaTime;
-                            yield return null;
-                        }
-                        dialogueText.text += line[i];
-                        time = 0f;
-                    }
+                    dialogueText.text += line;
                 }
-            }
-            else
-            {
-                dialogueText.text += line;
-            }
 
-            dialogueText.text += "\r\n";
-            while (time <= lineDelay)
-            {
-                time += Time.deltaTime;
-                if (time >= 0.3f && Input.anyKeyDown)
+                dialogueText.text += "\r\n";
+                //行间时间
+                while (time <= lineDelay)
                 {
-                    break;
+                    time += Time.deltaTime;
+                    if (time >= 0.3f && Input.anyKeyDown)
+                    {
+                        break;
+                    }
+                    yield return null;
                 }
-                yield return null;
-            }
 
-            time = 0f;
-            lineNum++;
-            if(lineNum >= 3)
-            {
-                FlushText();
-                lineNum = 0;
+                time = 0f;
+                lineNum++;
+
+                //三行后删除第一行文本
+                if (lineNum >= 3)
+                {
+                    dialogueText.text = dialogueText.text.Remove(0, dialogueText.text.IndexOf("\r\n"));
+                    lineNum = 3;
+                }
+                #endregion
             }
-            #endregion
         }
         DialogueEnd();
         yield return true;
-    }
-
-    private void FlushText()
-    {
-        dialogueText.text = null;
     }
 
     public virtual void Close()
