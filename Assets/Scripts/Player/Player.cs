@@ -13,6 +13,7 @@ public class Player : MoveCharacter
     protected override void Start()
     {
         base.Start();
+
         if(emote != null)
         {
             emote.SetActive(false);

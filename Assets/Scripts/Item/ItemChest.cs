@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ItemChest : Item, IHandlePlayerHit
+public class ItemChest : MonoBehaviour, IHandlePlayerHit
 {
     Animator animator;
     public void OnPlayerHit(Player player)

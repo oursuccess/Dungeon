@@ -118,23 +118,21 @@ public class ItemController : MonoBehaviour
             float xPos = xBegin + attr.index * xInterD;
             float yPos = yBegin;
 
-            if((item.transform.position - new Vector3(xPos , yPos)).sqrMagnitude >= dragD)
+            //if((item.transform.position - new Vector3(xPos , yPos)).sqrMagnitude >= dragD)
+            displayingItems.Remove(item);
+            spawnedItems.Add(item);
+            item.OnItemDraged -= OnItemDraged;
+
+            var obj = Instantiate(item.gameObject, new Vector2(xPos, yPos), Quaternion.identity);
+            obj.name = item.name;
+            var it = obj.GetComponent<Item>();
+            it.OnItemDraged += OnItemDraged;
+            displayingItems.Add(it);
+
+            attr.changeNum(-1);
+            if (attr.num <= 0)
             {
-                displayingItems.Remove(item);
-                spawnedItems.Add(item);
-                item.OnItemDraged -= OnItemDraged;
-
-                var obj = Instantiate(item.gameObject, new Vector2(xPos, yPos), Quaternion.identity);
-                obj.name = item.name;
-                var it = obj.GetComponent<Item>();
-                it.OnItemDraged += OnItemDraged;
-                displayingItems.Add(it);
-
-                attr.changeNum(-1);
-                if (attr.num <= 0)
-                {
-                    it.enabled = false;
-                }
+                it.enabled = false;
             }
         }
     }

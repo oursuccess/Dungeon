@@ -7,10 +7,12 @@ public class ItemBat : Item, IHandlePlayerHit
     private Player player;
     private Animator animator;
 
-    void Start()
+    protected override void Start()
     {
         animator = gameObject.GetComponent<Animator>();
         animator.enabled = false;
+
+        base.Start();
     }
     public void OnPlayerHit(Player p)
     {

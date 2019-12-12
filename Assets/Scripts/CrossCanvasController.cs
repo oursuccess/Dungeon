@@ -16,6 +16,7 @@ public class CrossCanvasController : MonoBehaviour
     public GameObject ItemNumText { get; private set; }
     public GameObject DieText { get; private set; }
     public GameObject Guide { get; private set; }
+    public GameObject DirectionText { get; private set; }
     #endregion
 
     void Awake()
@@ -37,5 +38,6 @@ public class CrossCanvasController : MonoBehaviour
         ItemNumText = transform.Find("ItemNumText").gameObject;
         DieText = transform.Find("DieText").gameObject;
         Guide = transform.Find("Guide").gameObject;
+        DirectionText = transform.Find("DirectionText").gameObject;
     }
 }

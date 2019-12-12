@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ItemSlime : Item, IHandlePlayerHit, IEffect
+public class ItemSlime : Item, IHandlePlayerHit 
 {
     private void OnCollisionEnter2D(Collision2D collision)
     {
