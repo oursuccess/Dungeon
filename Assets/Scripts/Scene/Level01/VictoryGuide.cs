@@ -4,11 +4,17 @@ using UnityEngine;
 
 public class VictoryGuide : Guide
 {
+    GameObject door;
     protected override void Start()
     {
         base.Start();
 
-        GameObject door = GameObject.Find("Door");
+        door = GameObject.Find("Door");
+        door.GetComponent<ChestHandler>().PositionChanged += OnDoorPositionChanged;
+    }
+
+    private void OnDoorPositionChanged()
+    {
         transform.position = new Vector3(door.transform.position.x - 3, door.transform.position.y);
     }
 
@@ -20,7 +26,7 @@ public class VictoryGuide : Guide
             //应该是游戏暂停运行
             Physics2D.IgnoreCollision(collision, gameObject.GetComponent<BoxCollider2D>());
 
-            GuideStart(0.5f, 1f, player);
+            GuideStart(player);
         }
 
     }

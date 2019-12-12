@@ -19,7 +19,7 @@ public class MoveGuide : Guide
             //应该是游戏暂停运行
             Physics2D.IgnoreCollision(collision, gameObject.GetComponent<BoxCollider2D>());
 
-            GuideStart(0.5f, 1f, player);
+            GuideStart(player);
         }
     }
 

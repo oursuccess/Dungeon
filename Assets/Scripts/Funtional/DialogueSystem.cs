@@ -18,6 +18,16 @@ public class DialogueSystem : MonoBehaviour
     public event TextShowoff OnTextShowOff;
     private string pattern;
 
+    #region properties
+    private static float WordDelay = 0.3f;
+    private static float LineDelay = 1f;
+
+    private float wordDelay;
+    private float lineDelay;
+    private Color bgColor;
+    private Color faceColor;
+    #endregion
+
     public DialogueSystem(TextAsset text, GameObject Dialogue)
     {
         dialogue = new DialogueContent(text);
@@ -27,7 +37,7 @@ public class DialogueSystem : MonoBehaviour
         faceImage = dialogueObject.transform.Find("Face").gameObject.GetComponentInChildren<Image>();
         bgImage = dialogueObject.transform.GetComponent<Image>();
 
-        pattern = @"<.+>.*</.+>";
+        InitProperties();
     }
 
     public DialogueSystem(TextAsset text, Text textUI, Image faceImage, Image bgImage)
@@ -37,7 +47,7 @@ public class DialogueSystem : MonoBehaviour
         this.faceImage = faceImage;
         this.bgImage = bgImage;
 
-        pattern = @"<.+>.*</.+>";
+        InitProperties();
     }
 
     protected virtual void DialogueStart()
@@ -53,20 +63,23 @@ public class DialogueSystem : MonoBehaviour
         dialogueText.gameObject.SetActive(false);
         if(faceImage != null)
         {
+            faceImage.color = faceColor;
             faceImage.overrideSprite = null;
+
             faceImage.gameObject.SetActive(false);
         }
         if(bgImage != null)
         {
+            bgImage.color = bgColor;
             bgImage.overrideSprite = null;
+
             bgImage.gameObject.SetActive(false);
-            bgImage.color = new Color(1, 1, 1, 1);
         }
 
         OnTextShowOff?.Invoke();
     }
 
-    public IEnumerator Show(float wordDelay = 0.2f, float lineDelay = 3f)
+    public IEnumerator Show()
     {
         DialogueStart();
         float time = 0f;
@@ -90,13 +103,13 @@ public class DialogueSystem : MonoBehaviour
                             case "FACEIMAGE":
                                 {
                                     string faceImagePath = "Image/Face/" + property;
+                                    Debug.Log(faceImagePath);
                                     faceImage.overrideSprite = Resources.Load(faceImagePath, typeof(Sprite)) as Sprite;
                                 }
                                 break;
                             case "BGIMAGE":
                                 {
                                     string BGImagePath = "Image/BG/" + property;
-                                    Debug.Log(BGImagePath);
                                     bgImage.overrideSprite = Resources.Load(BGImagePath, typeof(Sprite)) as Sprite;
                                     bgImage.color = new Color(1, 1, 1);
                                 }
@@ -104,7 +117,17 @@ public class DialogueSystem : MonoBehaviour
                             case "BGCOLOR":
                                 {
                                     var color = property.Split(',');
-                                    bgImage.color = new Color(int.Parse(color[0]), int.Parse(color[1]), int.Parse(color[2]));
+                                    bgImage.color = new Color(float.Parse(color[0]), float.Parse(color[1]), float.Parse(color[2]));
+                                }
+                                break;
+                            case "WORDSPEED":
+                                {
+                                    wordDelay = float.Parse(property);
+                                }
+                                break;
+                            case "LINESPEED":
+                                {
+                                    lineDelay = float.Parse(property);
                                 }
                                 break;
                             default:
@@ -248,6 +271,33 @@ public class DialogueSystem : MonoBehaviour
         }
         DialogueEnd();
         yield return true;
+    }
+
+    private void InitProperties()
+    {
+        //把pattern放在这里，就相当于确认了使用<>作为所有对话系统的特殊标签，在使用ugui时暂时没有太大问题
+        pattern = @"<.+>.*</.+>";
+
+        wordDelay = WordDelay;
+        lineDelay = LineDelay;
+
+        bgColor = bgImage.color;
+        faceColor = faceImage.color;
+    }
+
+    private void ResetProperties()
+    {
+        wordDelay = WordDelay;
+        lineDelay = LineDelay;
+
+        bgImage.color = bgColor;
+        faceImage.color = faceColor;
+    }
+
+    public static void SetTextSpeed(float wordSpeed, float lineSpeed)
+    {
+        WordDelay = wordSpeed;
+        LineDelay = lineSpeed;
     }
 
     public virtual void Close()

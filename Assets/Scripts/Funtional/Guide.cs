@@ -40,20 +40,15 @@ public class Guide : MonoBehaviour
 
     public virtual void GuideStart(params MoveObject[] invokeMoveObjects)
     {
-        GuideStart(0.2f, 3f, invokeMoveObjects);
-    }
-
-    public virtual void GuideStart(float wordDelay = 0.2f, float lineDelay = 3f, params MoveObject[] invokeMoveObjects)
-    {
         if(invokeMoveObjects != null)
         {
             this.invokeMoveObjects = invokeMoveObjects;
         }
 
-        TextShow(wordDelay, lineDelay);
+        TextShow();
     }
 
-    protected virtual void TextShow(float wordDelay = 0.2f, float lineDelay = 3f) 
+    protected virtual void TextShow() 
     {
         if(invokeMoveObjects != null)
         {

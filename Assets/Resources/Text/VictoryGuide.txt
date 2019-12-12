@@ -1,2 +1,2 @@
-接近<color = #ffff00ff>宝箱</color>即可通关
+接近<color=#ffff00ff>宝箱</color>即可通关
 按下鼠标左键以继续
