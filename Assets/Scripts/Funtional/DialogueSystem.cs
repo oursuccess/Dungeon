@@ -12,6 +12,7 @@ public class DialogueSystem : MonoBehaviour
     private Image bgImage;
     private Image faceImage;
     private Text dialogueText;
+    private Image toNextIcon;
     private string path;
 
     public delegate void TextShowoff();
@@ -35,51 +36,24 @@ public class DialogueSystem : MonoBehaviour
         GameObject dialogueObject = Dialogue;
         dialogueText = dialogueObject.transform.Find("Text").gameObject.GetComponentInChildren<Text>();
         faceImage = dialogueObject.transform.Find("Face").gameObject.GetComponentInChildren<Image>();
+        toNextIcon = dialogueObject.transform.Find("ToNextIcon").gameObject.GetComponentInChildren<Image>();
         bgImage = dialogueObject.transform.GetComponent<Image>();
 
         InitProperties();
     }
 
-    public DialogueSystem(TextAsset text, Text textUI, Image faceImage, Image bgImage)
+    public DialogueSystem(TextAsset text, Text textUI, Image faceImage, Image bgImage, Image toNextImage = null)
     {
         dialogue = new DialogueContent(text);
         dialogueText = textUI;
         this.faceImage = faceImage;
         this.bgImage = bgImage;
+        toNextIcon = toNextImage;
 
         InitProperties();
     }
 
-    protected virtual void DialogueStart()
-    {
-        dialogueText.gameObject.SetActive(true);
-        faceImage?.gameObject.SetActive(true);
-        bgImage?.gameObject.SetActive(true);
-    }
-
-    protected virtual void DialogueEnd()
-    {
-        dialogueText.text = null;
-        dialogueText.gameObject.SetActive(false);
-        if(faceImage != null)
-        {
-            faceImage.color = faceColor;
-            faceImage.overrideSprite = null;
-
-            faceImage.gameObject.SetActive(false);
-        }
-        if(bgImage != null)
-        {
-            bgImage.color = bgColor;
-            bgImage.overrideSprite = null;
-
-            bgImage.gameObject.SetActive(false);
-        }
-
-        OnTextShowOff?.Invoke();
-    }
-
-    public IEnumerator Show()
+     public IEnumerator Show()
     {
         DialogueStart();
         float time = 0f;
@@ -103,7 +77,6 @@ public class DialogueSystem : MonoBehaviour
                             case "FACEIMAGE":
                                 {
                                     string faceImagePath = "Image/Face/" + property;
-                                    Debug.Log(faceImagePath);
                                     faceImage.overrideSprite = Resources.Load(faceImagePath, typeof(Sprite)) as Sprite;
                                 }
                                 break;
@@ -269,8 +242,35 @@ public class DialogueSystem : MonoBehaviour
                 #endregion
             }
         }
+
         DialogueEnd();
-        yield return true;
+
+        #region toNextButtonSplash
+        float t = 0;
+        while (true)
+        {
+            while(t <= 0.4f)
+            {
+                t += Time.deltaTime;
+                yield return null;
+            }
+
+            toNextIcon.gameObject.SetActive(true);
+
+            t = 0f;
+
+            while(t <= 0.4f)
+            {
+                t += Time.deltaTime;
+                yield return null;
+            }
+            toNextIcon.gameObject.SetActive(false);
+
+            t = 0f;
+
+            yield return null;
+        }
+        #endregion
     }
 
     private void InitProperties()
@@ -300,8 +300,38 @@ public class DialogueSystem : MonoBehaviour
         LineDelay = lineSpeed;
     }
 
+    protected virtual void DialogueStart()
+    {
+        toNextIcon?.gameObject.SetActive(false);
+
+        dialogueText.gameObject.SetActive(true);
+        faceImage?.gameObject.SetActive(true);
+        bgImage?.gameObject.SetActive(true);
+    }
+
+    protected virtual void DialogueEnd()
+    {
+        OnTextShowOff?.Invoke();
+    }
+
     public virtual void Close()
     {
+        dialogueText.text = null;
         dialogueText.gameObject.SetActive(false);
+        if (faceImage != null)
+        {
+            faceImage.color = faceColor;
+            faceImage.overrideSprite = null;
+
+            faceImage.gameObject.SetActive(false);
+        }
+        toNextIcon?.gameObject.SetActive(false);
+        if(bgImage != null)
+        {
+            bgImage.color = bgColor;
+            bgImage.overrideSprite = null;
+
+            bgImage.gameObject.SetActive(false);
+        }
     }
 }
