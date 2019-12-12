@@ -18,7 +18,7 @@ public class EnemyGuide : Guide
         if (player != null)
         {
             //应该是游戏暂停运行
-            Physics2D.IgnoreCollision(collision, gameObject.GetComponent<BoxCollider2D>());
+            Destroy(gameObject.GetComponent<BoxCollider2D>());
 
             GuideStart(player);
         }

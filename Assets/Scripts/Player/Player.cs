@@ -11,6 +11,9 @@ public class Player : MoveCharacter
     [SerializeField]
     private GameObject emote;
 
+    //控制敌人行动与否，检测敌人是否处在视线中
+    private BoxCollider2D trigger;
+
     protected override void Start()
     {
         base.Start();
@@ -25,10 +28,8 @@ public class Player : MoveCharacter
         canMove = true;
         animator.enabled = false;
         moveDir = Vector2.right;
-    }
 
-    protected override void Update()
-    {
+        SetTrigger();
     }
 
     protected override void SimpleAutoMove(Vector2 direction)
@@ -101,6 +102,20 @@ public class Player : MoveCharacter
         {
             hit.OnPlayerSought(this);
         }
+    }
+
+    private void SetTrigger()
+    {
+        trigger = gameObject.AddComponent<BoxCollider2D>();
+        trigger.isTrigger = true;
+
+        Camera cam = Camera.main;
+        float xPos = transform.position.x;
+        float yPos = transform.position.y;
+        int xSize = Mathf.CeilToInt(Mathf.Max(xPos - cam.ViewportToWorldPoint(new Vector3(0, 0, 0)).x, cam.ViewportToWorldPoint(new Vector3(1, 0, 0)).x - xPos));
+        int ySize = Mathf.CeilToInt(Mathf.Max(yPos - cam.ViewportToWorldPoint(new Vector3(0, 0, 0)).y, cam.ViewportToWorldPoint(new Vector3(0, 1, 0)).y - yPos));
+
+        trigger.size = new Vector2(xSize, ySize);
     }
 
     private void EmoteDeactive()
