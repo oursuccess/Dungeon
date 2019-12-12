@@ -14,6 +14,7 @@ public abstract class MoveCharacter : MoveObject
     protected override void Start()
     {
         animator = GetComponent<Animator>();
+        sight *= sight;
         
         base.Start();
     }

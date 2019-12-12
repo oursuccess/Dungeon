@@ -23,4 +23,8 @@ public class EnemyStab : Enemy, IHandlePlayerSought
     public void OnPlayerSought(Player player)
     {
     }
+
+    public void OnPlayerNotSeeing(Player player)
+    {
+    }
 }

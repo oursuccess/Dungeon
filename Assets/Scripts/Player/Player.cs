@@ -8,11 +8,7 @@ public class Player : MoveCharacter
     private float animSizeXRatio = 0.1f;
     private float animSizeYRatio = 0.1f;
 
-    [SerializeField]
-    private GameObject emote;
-
-    //控制敌人行动与否，检测敌人是否处在视线中
-    private BoxCollider2D trigger;
+    public GameObject emote;
 
     protected override void Start()
     {
@@ -28,8 +24,6 @@ public class Player : MoveCharacter
         canMove = true;
         animator.enabled = false;
         moveDir = Vector2.right;
-
-        SetTrigger();
     }
 
     protected override void SimpleAutoMove(Vector2 direction)
@@ -81,6 +75,7 @@ public class Player : MoveCharacter
         {
             hit.OnPlayerHit(this);
         }
+
         else if (canMove && collision.transform.name.Contains("Ground"))
         {
             animator.enabled = true;
@@ -92,30 +87,43 @@ public class Player : MoveCharacter
 
     protected void OnTriggerEnter2D(Collider2D collision)
     {
-        if(emote != null)
+
+        if (collision.isTrigger)
         {
-            emote.SetActive(true);
-            Invoke("EmoteDeactive", 2f);
+            ICanSawPlayer sought = collision.gameObject.GetComponent<ICanSawPlayer>();
+            if (sought != null)
+            {
+                sought.ISawPlayer(this);
+            }
         }
-        IHandlePlayerSought hit = collision.gameObject.GetComponent<IHandlePlayerSought>();
-        if(hit != null)
+        else
         {
-            hit.OnPlayerSought(this);
+            IHandlePlayerSought hit = collision.gameObject.GetComponent<IHandlePlayerSought>();
+            if (hit != null)
+            {
+                hit.OnPlayerSought(this);
+            }
         }
     }
 
-    private void SetTrigger()
+    protected void OnTriggerExit2D(Collider2D collision)
     {
-        trigger = gameObject.AddComponent<BoxCollider2D>();
-        trigger.isTrigger = true;
-
-        Camera cam = Camera.main;
-        float xPos = transform.position.x;
-        float yPos = transform.position.y;
-        int xSize = Mathf.CeilToInt(Mathf.Max(xPos - cam.ViewportToWorldPoint(new Vector3(0, 0, 0)).x, cam.ViewportToWorldPoint(new Vector3(1, 0, 0)).x - xPos));
-        int ySize = Mathf.CeilToInt(Mathf.Max(yPos - cam.ViewportToWorldPoint(new Vector3(0, 0, 0)).y, cam.ViewportToWorldPoint(new Vector3(0, 1, 0)).y - yPos));
-
-        trigger.size = new Vector2(xSize, ySize);
+        if (collision.isTrigger)
+        {
+            ICanSawPlayer sought = collision.gameObject.GetComponent<ICanSawPlayer>();
+            if (sought != null)
+            {
+                sought.ILosePlayer(this);
+            }
+        }
+        else
+        {
+            IHandlePlayerSought hit = collision.gameObject.GetComponent<IHandlePlayerSought>();
+            if (hit != null)
+            {
+                hit.OnPlayerSought(this);
+            }
+        }
     }
 
     private void EmoteDeactive()

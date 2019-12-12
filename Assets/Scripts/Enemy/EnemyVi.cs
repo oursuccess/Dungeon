@@ -29,4 +29,8 @@ public class EnemyVi : Enemy, IHandlePlayerSought
         animator.SetBool("Idle", true);
     }
 
+    public void OnPlayerNotSeeing(Player player)
+    {
+        throw new System.NotImplementedException();
+    }
 }

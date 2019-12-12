@@ -5,4 +5,5 @@ using UnityEngine;
 interface IHandlePlayerSought
 {
     void OnPlayerSought(Player player);
+    void OnPlayerNotSeeing(Player player);
 }
