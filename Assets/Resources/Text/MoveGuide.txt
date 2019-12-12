@@ -1,3 +1,5 @@
 游戏进行过程中
+#@FaceImage = Blush
 玩家将自动向前移动
+#@BGImage = DialogueBG_Move
 单击<color=#00FF01FF>鼠标左键</color>以继续 

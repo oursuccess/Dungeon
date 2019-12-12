@@ -12,6 +12,7 @@ public class DialogueSystem : MonoBehaviour
     private Image bgImage;
     private Image faceImage;
     private Text dialogueText;
+    private string path;
 
     public delegate void TextShowoff();
     public event TextShowoff OnTextShowOff;
@@ -48,9 +49,19 @@ public class DialogueSystem : MonoBehaviour
 
     protected virtual void DialogueEnd()
     {
+        dialogueText.text = null;
         dialogueText.gameObject.SetActive(false);
-        faceImage?.gameObject.SetActive(false);
-        bgImage?.gameObject.SetActive(false);
+        if(faceImage != null)
+        {
+            faceImage.overrideSprite = null;
+            faceImage.gameObject.SetActive(false);
+        }
+        if(bgImage != null)
+        {
+            bgImage.overrideSprite = null;
+            bgImage.gameObject.SetActive(false);
+            bgImage.color = new Color(1, 1, 1, 1);
+        }
 
         OnTextShowOff?.Invoke();
     }
@@ -66,14 +77,39 @@ public class DialogueSystem : MonoBehaviour
             //以#@开头的文本为高级文本
             if (line.StartsWith("#@"))
             {
-                var tags = Regex.Replace(line, @"\s" ,"").Substring(2).Split(',');
+                var tags = Regex.Replace(line, @"\s" ,"").Substring(2).Split(';');
                 foreach(var tag in tags)
                 {
-                    var pair = tag.Substring('=');
+                    var pair = tag.Split('=');
                     if(pair.Length == 2)
                     {
-                        var variable = pair[0];
+                        var variable = pair[0].ToUpper();
                         var property = pair[1];
+                        switch(variable)
+                        {
+                            case "FACEIMAGE":
+                                {
+                                    string faceImagePath = "Image/Face/" + property;
+                                    faceImage.overrideSprite = Resources.Load(faceImagePath, typeof(Sprite)) as Sprite;
+                                }
+                                break;
+                            case "BGIMAGE":
+                                {
+                                    string BGImagePath = "Image/BG/" + property;
+                                    Debug.Log(BGImagePath);
+                                    bgImage.overrideSprite = Resources.Load(BGImagePath, typeof(Sprite)) as Sprite;
+                                    bgImage.color = new Color(1, 1, 1);
+                                }
+                                break;
+                            case "BGCOLOR":
+                                {
+                                    var color = property.Split(',');
+                                    bgImage.color = new Color(int.Parse(color[0]), int.Parse(color[1]), int.Parse(color[2]));
+                                }
+                                break;
+                            default:
+                                break;
+                        }
                     }
 #if UNITY_EDITOR
                     else

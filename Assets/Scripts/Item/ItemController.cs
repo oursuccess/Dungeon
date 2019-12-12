@@ -36,7 +36,6 @@ public class ItemController : MonoBehaviour
     [SerializeField]
     private float dragD = 1f;
 
-    [SerializeField]
     private Text numText;
 
     private Camera cam;
@@ -50,6 +49,8 @@ public class ItemController : MonoBehaviour
         itemControllerDics = new Dictionary<string, itemAttribute>();
         spawnedItems = new List<Item>();
         displayingItems = new List<Item>();
+
+        numText = CrossCanvasController.Instance.ItemNumText.GetComponent<Text>();
 
         HandleCameraPosition();
 
