@@ -25,27 +25,23 @@ public class SetDirection : MonoBehaviour
 
     void Start()
     {
+        GameObject itemDirectionComponent = GameObject.Find("ItemDirectionComponent");
         if (RightArrow == null)
         {
-            RightArrow = transform.Find("RightArrow").gameObject;
+            RightArrow = itemDirectionComponent.transform.Find("RightArrow").gameObject;
         }
         if(LeftArrow == null)
         {
-            LeftArrow = transform.Find("LeftArrow").gameObject;
+            LeftArrow = itemDirectionComponent.transform.Find("LeftArrow").gameObject;
         }
         if(GuideText == null)
         {
-            GuideText = transform.Find("GuideText").gameObject;
-            if(GuideText == null)
-            {
-                GuideText = CrossCanvasController.Instance.DirectionText;
-            }
+            GuideText = itemDirectionComponent.transform.Find("GuideText").gameObject;
         }
 
         RightArrow.SetActive(false);
         LeftArrow.SetActive(false);
         GuideText.SetActive(false);
-
     }
 
     public void SetDirectionOfTarget()

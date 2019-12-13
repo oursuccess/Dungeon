@@ -39,7 +39,6 @@ public abstract class Item : MonoBehaviour
         {
             Vector2 newPos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y));
             transform.position = newPos;
-
         }
     }
 
@@ -47,11 +46,14 @@ public abstract class Item : MonoBehaviour
     {
         Vector2 currPos = transform.position;
         float distanceNow = (basePos - currPos).sqrMagnitude;
+
         float x = basePos.x - currPos.x;
         float y = basePos.y - currPos.y;
-        while (distanceNow > 0.2f)
+        while (distanceNow >= 0.1f)
         {
             transform.Translate(new Vector2(x*Time.deltaTime, y*Time.deltaTime));
+            currPos = transform.position;
+            distanceNow = (basePos - currPos).sqrMagnitude;
             yield return null;
         }
 

@@ -1065,7 +1065,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1280732006}
-  - component: {fileID: 1280732005}
   - component: {fileID: 1280732004}
   m_Layer: 0
   m_Name: SceneController
@@ -1093,18 +1092,6 @@ MonoBehaviour:
   - {fileID: 3996724681827544894, guid: f03a51dac0956b74e9ab2f7d6970400b, type: 3}
   - {fileID: 4323778571312148079, guid: bb7f71deff20d094d978919aa42dda0b, type: 3}
   - {fileID: 4297207473015552066, guid: d8c854f9163a16f40a96b75d86e25805, type: 3}
---- !u!114 &1280732005
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1280732003}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f2128e7ae46004e4b9e5655087df0897, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &1280732006
 Transform:
   m_ObjectHideFlags: 0
