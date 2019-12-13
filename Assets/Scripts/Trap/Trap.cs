@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Enemy : MonoBehaviour, IHandlePlayerHit
+public abstract class Trap : MonoBehaviour, IHandlePlayerHit
 {
     // Start is called before the first frame update
     protected virtual void Start()

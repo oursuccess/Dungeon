@@ -14,8 +14,10 @@ public class SetDirection : MonoBehaviour
     private GameObject GuideText;
     #endregion
     #region CanAssignProps
-    float textShowTime = 0.2f;
-    float textShowDelay = 0.1f;
+    private static float TextShowTime = 0.2f;
+    private static float TextShowDelay = 0.1f;
+    private float textShowTime;
+    private float textShowDelay;
     #endregion
     #region Variables
     SetDirectionComponent rightArrowComp, leftArrowComp;
@@ -29,24 +31,27 @@ public class SetDirection : MonoBehaviour
     public delegate void OnDirectionCompletedDel();
     public event OnDirectionCompletedDel OnDirectionCompleted;
     #endregion
+    #region Routine
+    private Coroutine textSplashRoutine;
+    #endregion
 
     public void SetDirectionOfTarget(Item item)
     {
         this.item = item;
         setting = true;
         derivedFromItem = true;
+        textShowTime = TextShowTime;
+        textShowDelay = TextShowDelay;
         Preparations();
-        StartCoroutine(SplashText());
-        Completation();
-        setting = false;
+        textSplashRoutine = StartCoroutine(SplashText());
     }
-
     protected virtual void Preparations()
     {
         if(RightArrow == null || LeftArrow == null)
         {
             derivedFromItem = false;
 
+            //Need To Clean
             GameObject itemDirectionComponent = GameObject.Find("ItemDirectionComponent");
             RightArrow = itemDirectionComponent.transform.Find("RightArrow").gameObject;
             LeftArrow = itemDirectionComponent.transform.Find("LeftArrow").gameObject;
@@ -60,8 +65,8 @@ public class SetDirection : MonoBehaviour
             if (itemSpriteRender != null)
             {
                 Sprite itemSprite = itemSpriteRender.sprite;
-                itemXD = itemSprite.rect.width * item.transform.localScale.x / 2;
-                itemYD = itemSprite.rect.height * item.transform.localScale.y / 2;
+                itemXD = itemSprite.rect.width * item.transform.localScale.x  * 2 / Camera.main.pixelWidth;
+                itemYD = itemSprite.rect.height * item.transform.localScale.y * 2 / Camera.main.pixelHeight;
             }
             else
             {
@@ -85,7 +90,6 @@ public class SetDirection : MonoBehaviour
         LeftArrow.SetActive(true);
         GuideText.SetActive(true);
     }
-
     private IEnumerator SplashText()
     {
         float passT = 0f;
@@ -111,6 +115,7 @@ public class SetDirection : MonoBehaviour
     }
     protected virtual void Completation()
     {
+        StopCoroutine(textSplashRoutine);
         if (derivedFromItem)
         {
             LeftArrow.SetActive(false);
@@ -119,12 +124,13 @@ public class SetDirection : MonoBehaviour
         }
         else
         {
-            Destroy(item.transform.Find(LeftArrow.name));
-            Destroy(item.transform.Find(RightArrow.name));
-            Destroy(item.transform.Find(GuideText.name));
+            Destroy(item.transform.Find(LeftArrow.name).gameObject);
+            Destroy(item.transform.Find(RightArrow.name).gameObject);
+            Destroy(item.transform.Find(GuideText.name).gameObject);
         }
-    }
 
+        OnDirectionCompleted?.Invoke();
+    }
     protected virtual void OnDirectionSelected(SetDirectionComponent direction)
     {
         //根据方向为对应的移动组件赋值
@@ -136,7 +142,7 @@ public class SetDirection : MonoBehaviour
         {
             Debug.Log("left");
         }
+        Completation();
         setting = false;
     }
-
 }

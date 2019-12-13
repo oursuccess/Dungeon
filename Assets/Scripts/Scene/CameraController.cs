@@ -19,16 +19,15 @@ public class CameraController : MonoBehaviour
     {
         offset = transform.position - target.transform.position;
 
-        target.GetComponent<MoveObject>().OnMoving += ChangeCameraPosition;
+        target.GetComponent<MoveObject>().Moving += ChangeCameraPosition;
         
         xSizeMin = Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 0)).x;
         xSizeMax = Camera.main.ViewportToWorldPoint(new Vector3(1, 0, 0)).x;
         ySizeMin = Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 0)).y;
         ySizeMax = Camera.main.ViewportToWorldPoint(new Vector3(0, 1, 0)).y;
-
     }
 
-    void ChangeCameraPosition()
+    void ChangeCameraPosition(MoveObject moveObject)
     {
         xSizeMin = Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 0)).x;
         xSizeMax = Camera.main.ViewportToWorldPoint(new Vector3(1, 0, 0)).x;

@@ -23,7 +23,7 @@ public abstract class Item : MonoBehaviour
             setDirection = gameObject.GetComponent<SetDirection>();
             if(setDirection == null)
             {
-                setDirection = new SetDirection();
+                setDirection = GameObject.Find("ItemDirectionComponent").GetComponent<SetDirection>(); 
             }
             OnItemDraged += setDirection.SetDirectionOfTarget;
 
@@ -90,7 +90,6 @@ public abstract class Item : MonoBehaviour
                 {
                     basePos = newPos;
                     draged = true;
-                    Debug.Log("draged");
                     OnItemDraged?.Invoke(this);
                 }
                 else

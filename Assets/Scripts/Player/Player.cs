@@ -5,11 +5,13 @@ using UnityEngine.UI;
 
 public class Player : MoveCharacter
 {
+    #region Emote
+    public GameObject emote;
+    #endregion
+    #region Temp
     private float animSizeXRatio = 0.1f;
     private float animSizeYRatio = 0.1f;
-
-    public GameObject emote;
-
+    #endregion
     protected override void Start()
     {
         base.Start();
@@ -26,24 +28,23 @@ public class Player : MoveCharacter
         animator.enabled = false;
         moveDir = Vector2.right;
     }
-
     protected override void SimpleAutoMove(Vector2 direction)
     {
         base.SimpleAutoMove(direction);
     }
-
+    #region MoveInterface
     public override void StopMove()
     {
         canMove = false;
         base.StopMove();
     }
-
     public override void StartMove()
     {
         canMove = true;
         rigidBody2D.gravityScale = 1;
     }
-
+    #endregion
+    #region GameOver
     public override void Dead()
     {
         emote.SetActive(false);
@@ -52,23 +53,23 @@ public class Player : MoveCharacter
         //to enable
         Invoke("GameOver", 1f);
     }
-
     private void GameOver()
     {
         GameManager.Instance.GameOver();
     }
-
+    #endregion
+    #region Won
     public void Won()
     {
         StopMove();
         Invoke("GameWon", 1f);
     }
-
     private void GameWon()
     {
         GameManager.Instance.ToNextStage();
     }
-
+    #endregion
+    #region HandleHit(Hit,Ground)
     protected override void OnCollisionEnter2D(Collision2D collision)
     {
         IHandlePlayerHit hit = collision.gameObject.GetComponent<IHandlePlayerHit>();
@@ -85,7 +86,8 @@ public class Player : MoveCharacter
 
         base.OnCollisionEnter2D(collision);
     }
-
+    #endregion
+    #region CallEnemy(Hit,Saw)
     protected void OnTriggerEnter2D(Collider2D collision)
     {
 
@@ -106,7 +108,6 @@ public class Player : MoveCharacter
             }
         }
     }
-
     protected void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.isTrigger)
@@ -126,9 +127,5 @@ public class Player : MoveCharacter
             }
         }
     }
-
-    private void EmoteDeactive()
-    {
-        emote.SetActive(false);
-    }
+    #endregion
 }

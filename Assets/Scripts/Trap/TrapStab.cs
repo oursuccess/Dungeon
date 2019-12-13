@@ -2,20 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyVi : Enemy, IHandlePlayerSought
+public class TrapStab : Trap, IHandlePlayerSought
 {
-    private Animator animator;
     protected override void Start()
     {
-        animator = transform.GetComponent<Animator>();
-
+        transform.position = new Vector2(transform.position.x, Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 0)).y + 0.7f);
         base.Start();
     }
 
     public override void Effect(Player player)
     {
-        animator.SetTrigger("Attack");
-
         player.Dead();
     }
 
@@ -26,11 +22,9 @@ public class EnemyVi : Enemy, IHandlePlayerSought
 
     public void OnPlayerSought(Player player)
     {
-        animator.SetBool("Idle", true);
     }
 
     public void OnPlayerNotSeeing(Player player)
     {
-        throw new System.NotImplementedException();
     }
 }

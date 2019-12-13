@@ -3,14 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//加入了Find的能力和移动动画
 public abstract class MoveCharacter : MoveObject
 {
+    #region FindVar
     [SerializeField]
     protected float sight = 1;
     [SerializeField]
     protected LayerMask layer;
+    #endregion
+    #region AnimatorVar
     protected Animator animator;
-
+    #endregion
     protected override void Start()
     {
         animator = GetComponent<Animator>();
@@ -18,7 +22,11 @@ public abstract class MoveCharacter : MoveObject
         
         base.Start();
     }
-
+    protected override void Update()
+    {
+        base.Update();
+    }
+    #region AutoMove(Add Animator)
     protected override void SimpleAutoMove(Vector2 direction)
     {
         animator.SetBool("Running", true);
@@ -27,39 +35,33 @@ public abstract class MoveCharacter : MoveObject
 
         base.SimpleAutoMove(direction);
     }
-
-    protected override void Update()
-    {
-        base.Update();
-    }
-
+    #endregion
+    #region MoveInterface
     public override void StopMove()
     {
         StopMoveAnimation();
 
         base.StopMove();
     }
-
-    public virtual void Dead()
-    {
-        StopMove();
-
-        animator.SetBool("Dead", true);
-    }
-
     protected virtual void StopMoveAnimation()
     {
         animator.SetBool("Running", false);
         animator.SetFloat("Horizontal", 0f);
         animator.SetFloat("Vertical", 0f);
     }
+    public virtual void Dead()
+    {
+        StopMove();
 
+        animator.SetBool("Dead", true);
+    }
+    #endregion
+    #region Find
     protected bool Find(Vector2 direction, LayerMask layer, out RaycastHit2D hit)
     {
         Vector2 start = transform.position;
         return Find(start, direction, layer,out hit);
     }
-
     protected bool Find(Vector2 start, Vector2 direction, LayerMask layer, out RaycastHit2D hit)
     {
         Vector2 end = start + direction * sight;
@@ -70,5 +72,5 @@ public abstract class MoveCharacter : MoveObject
         }
         return false;
     }
-
+    #endregion
 }
