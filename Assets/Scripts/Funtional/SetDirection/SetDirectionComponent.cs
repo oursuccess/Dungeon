@@ -15,4 +15,5 @@ public class SetDirectionComponent : MonoBehaviour
     {
         OnDirectionSelected?.Invoke(this);
     }
+
 }

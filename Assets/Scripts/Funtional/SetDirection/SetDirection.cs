@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -18,9 +19,14 @@ public class SetDirection : MonoBehaviour
     #endregion
     #region Variables
     SetDirectionComponent rightArrowComp, leftArrowComp;
+    Item item;
     #endregion
     #region Controller
     private bool setting;
+    #endregion
+    #region Event
+    public delegate void OnDirectionCompletedDel();
+    public event OnDirectionCompletedDel OnDirectionCompleted;
     #endregion
 
     void Start()
@@ -44,27 +50,41 @@ public class SetDirection : MonoBehaviour
         GuideText.SetActive(false);
     }
 
-    public void SetDirectionOfTarget()
+    public void SetDirectionOfTarget(Item item)
     {
+        this.item = item;
         setting = true;
         Preparations();
-        StartCoroutine(SetLocalDirection());
+        StartCoroutine(SplashText());
         Completation();
         setting = false;
     }
 
     protected virtual void Preparations()
     {
+        RightArrow = Instantiate(RightArrow, item.transform);
+        LeftArrow = Instantiate(LeftArrow, item.transform);
+
         rightArrowComp = RightArrow.AddComponent<SetDirectionComponent>();
         leftArrowComp = LeftArrow.AddComponent<SetDirectionComponent>();
+
+        Vector2 itemPos = item.transform.position;
+        float itemXD = item.gameObject.GetComponent<Sprite>().rect.width * item.transform.localScale.x / 2;
+        float itemYD = item.gameObject.GetComponent<Sprite>().rect.height * item.transform.localScale.y / 2;
+        RightArrow.transform.position = new Vector2(itemPos.x + itemXD + 0.2f, itemPos.y - 0.1f);
+        LeftArrow.transform.position = new Vector2(itemPos.x - itemXD - 0.2f, itemPos.y - 0.1f);
+        GuideText.transform.position = new Vector2(itemPos.x, itemPos.y + itemYD + 0.2f);
 
         PrepareCollider(RightArrow);
         PrepareCollider(LeftArrow);
 
         rightArrowComp.OnDirectionSelected += OnDirectionSelected;
         leftArrowComp.OnDirectionSelected += OnDirectionSelected;
+
+        GuideText = Instantiate(GuideText, item.transform);
     }
-    private IEnumerator SetLocalDirection()
+
+    private IEnumerator SplashText()
     {
         float passT = 0f;
         while (setting)
@@ -89,9 +109,9 @@ public class SetDirection : MonoBehaviour
     }
     protected virtual void Completation()
     {
-        LeftArrow.SetActive(false);
-        RightArrow.SetActive(false);
-        GuideText.SetActive(false);
+        Destroy(item.transform.Find(LeftArrow.name));
+        Destroy(item.transform.Find(RightArrow.name));
+        Destroy(item.transform.Find(GuideText.name));
     }
 
     protected virtual void OnDirectionSelected(SetDirectionComponent direction)
@@ -99,11 +119,11 @@ public class SetDirection : MonoBehaviour
         //根据方向为对应的移动组件赋值
         if(direction == rightArrowComp)
         {
-
+            Debug.Log("right");
         }
         else if(direction == leftArrowComp)
         {
-
+            Debug.Log("left");
         }
         setting = false;
     }

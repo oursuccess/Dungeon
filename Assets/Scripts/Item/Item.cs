@@ -10,10 +10,24 @@ public abstract class Item : MonoBehaviour
     private bool draged;
     protected Vector2 basePos;
 
+    public bool DirectionNeedToSet;
+    private SetDirection setDirection;
+
     protected virtual void Start()
     {
         basePos = transform.position;
         draged = false;
+
+        if (DirectionNeedToSet)
+        {
+            setDirection = gameObject.GetComponent<SetDirection>();
+            if(setDirection == null)
+            {
+                setDirection = new SetDirection();
+            }
+            OnItemDraged += setDirection.SetDirectionOfTarget;
+            setDirection.OnDirectionCompleted += OnDirectionSelectComplete;
+        }
     }
 
     private void OnMouseEnter()
@@ -85,4 +99,8 @@ public abstract class Item : MonoBehaviour
         }
     }
 
+    private void OnDirectionSelectComplete()
+    {
+        enabled = false;
+    }
 }
