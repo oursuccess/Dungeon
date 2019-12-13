@@ -6,22 +6,38 @@ using UnityEngine;
 public abstract class MoveObject : MonoBehaviour
 {
     #region State
-    protected enum BaseMoveState
+    protected class MoveState
     {
-        Idle,
-        Moving,
-        Falling,
-        Jumping,
+        #region State
+        public int currState;
+        public int prevState;
+        #endregion
+        #region StateEnum
+        public static int Idle = 0;
+        public static int Move = 1;
+        public static int Jump = 2;
+        public static int Fall = 3;
+        #endregion
+        #region PublicInterface
+        public virtual void ChangeState(int state)
+        {
+            prevState = currState;
+            currState = state;
+        }
+        #endregion
+        #region event
+        public delegate void StateChangedDel(int state);
+        public event StateChangedDel StateChanged;
+        #endregion
+        #region InitState
+        public MoveState()
+        {
+            currState = Idle;
+            prevState = Idle;
+        }
+        #endregion
     }
-    protected enum AdvancedMoveState
-    {
-        Idle,
-        Searching,
-        Insulting,
-        Escaping,
-    }
-    protected BaseMoveState moveState;
-    protected AdvancedMoveState advancedState;
+    protected MoveState moveState;
     #endregion
     #region move
     [SerializeField]
@@ -48,6 +64,7 @@ public abstract class MoveObject : MonoBehaviour
     #endregion
     protected virtual void Start()
     {
+        moveState = new MoveState();
         lastMoveTime = 0;
         inverseMoveTime = 1 / moveTime;
         rigidBody2D = GetComponent<Rigidbody2D>();
@@ -78,14 +95,14 @@ public abstract class MoveObject : MonoBehaviour
     #region MoveInterface
     public virtual void StartMove()
     {
-        moveState = BaseMoveState.Moving;
+        moveState.ChangeState(MoveState.Move);
     }
     public virtual void StopMove()
     {
         if(moveRoutine != null)
         {
             StopCoroutine(moveRoutine);
-            moveState = BaseMoveState.Idle;
+            moveState.ChangeState(MoveState.Idle)
         }
     }
     #endregion
@@ -117,7 +134,6 @@ public abstract class MoveObject : MonoBehaviour
         yield return true;
     }
     #endregion
-
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.transform.name.Contains("Ground"))
