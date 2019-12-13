@@ -26,6 +26,7 @@ public abstract class Item : MonoBehaviour
                 setDirection = new SetDirection();
             }
             OnItemDraged += setDirection.SetDirectionOfTarget;
+
             setDirection.OnDirectionCompleted += OnDirectionSelectComplete;
         }
     }
@@ -89,6 +90,7 @@ public abstract class Item : MonoBehaviour
                 {
                     basePos = newPos;
                     draged = true;
+                    Debug.Log("draged");
                     OnItemDraged?.Invoke(this);
                 }
                 else

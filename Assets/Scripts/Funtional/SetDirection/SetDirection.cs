@@ -23,37 +23,18 @@ public class SetDirection : MonoBehaviour
     #endregion
     #region Controller
     private bool setting;
+    private bool derivedFromItem;
     #endregion
     #region Event
     public delegate void OnDirectionCompletedDel();
     public event OnDirectionCompletedDel OnDirectionCompleted;
     #endregion
 
-    void Start()
-    {
-        GameObject itemDirectionComponent = GameObject.Find("ItemDirectionComponent");
-        if (RightArrow == null)
-        {
-            RightArrow = itemDirectionComponent.transform.Find("RightArrow").gameObject;
-        }
-        if(LeftArrow == null)
-        {
-            LeftArrow = itemDirectionComponent.transform.Find("LeftArrow").gameObject;
-        }
-        if(GuideText == null)
-        {
-            GuideText = itemDirectionComponent.transform.Find("GuideText").gameObject;
-        }
-
-        RightArrow.SetActive(false);
-        LeftArrow.SetActive(false);
-        GuideText.SetActive(false);
-    }
-
     public void SetDirectionOfTarget(Item item)
     {
         this.item = item;
         setting = true;
+        derivedFromItem = true;
         Preparations();
         StartCoroutine(SplashText());
         Completation();
@@ -62,26 +43,47 @@ public class SetDirection : MonoBehaviour
 
     protected virtual void Preparations()
     {
-        RightArrow = Instantiate(RightArrow, item.transform);
-        LeftArrow = Instantiate(LeftArrow, item.transform);
+        if(RightArrow == null || LeftArrow == null)
+        {
+            derivedFromItem = false;
+
+            GameObject itemDirectionComponent = GameObject.Find("ItemDirectionComponent");
+            RightArrow = itemDirectionComponent.transform.Find("RightArrow").gameObject;
+            LeftArrow = itemDirectionComponent.transform.Find("LeftArrow").gameObject;
+            GuideText = itemDirectionComponent.transform.Find("GuideText").gameObject;
+            RightArrow = Instantiate(RightArrow, item.transform);
+            LeftArrow = Instantiate(LeftArrow, item.transform);
+            GuideText = Instantiate(GuideText, item.transform);
+
+            float itemXD, itemYD;
+            var itemSpriteRender = item.gameObject.GetComponent<SpriteRenderer>();
+            if (itemSpriteRender != null)
+            {
+                Sprite itemSprite = itemSpriteRender.sprite;
+                itemXD = itemSprite.rect.width * item.transform.localScale.x / 2;
+                itemYD = itemSprite.rect.height * item.transform.localScale.y / 2;
+            }
+            else
+            {
+                itemXD = item.transform.localScale.x / 2;
+                itemYD = item.transform.localScale.y / 2;
+            }
+
+            Vector2 itemPos = item.transform.position;
+            RightArrow.transform.position = new Vector2(itemPos.x + itemXD + 0.2f, itemPos.y - 0.1f);
+            LeftArrow.transform.position = new Vector2(itemPos.x - itemXD - 0.2f, itemPos.y - 0.1f);
+            GuideText.transform.position = new Vector2(itemPos.x, itemPos.y + itemYD + 0.2f);
+        }
 
         rightArrowComp = RightArrow.AddComponent<SetDirectionComponent>();
         leftArrowComp = LeftArrow.AddComponent<SetDirectionComponent>();
 
-        Vector2 itemPos = item.transform.position;
-        float itemXD = item.gameObject.GetComponent<Sprite>().rect.width * item.transform.localScale.x / 2;
-        float itemYD = item.gameObject.GetComponent<Sprite>().rect.height * item.transform.localScale.y / 2;
-        RightArrow.transform.position = new Vector2(itemPos.x + itemXD + 0.2f, itemPos.y - 0.1f);
-        LeftArrow.transform.position = new Vector2(itemPos.x - itemXD - 0.2f, itemPos.y - 0.1f);
-        GuideText.transform.position = new Vector2(itemPos.x, itemPos.y + itemYD + 0.2f);
-
-        PrepareCollider(RightArrow);
-        PrepareCollider(LeftArrow);
-
         rightArrowComp.OnDirectionSelected += OnDirectionSelected;
         leftArrowComp.OnDirectionSelected += OnDirectionSelected;
 
-        GuideText = Instantiate(GuideText, item.transform);
+        RightArrow.SetActive(true);
+        LeftArrow.SetActive(true);
+        GuideText.SetActive(true);
     }
 
     private IEnumerator SplashText()
@@ -109,9 +111,18 @@ public class SetDirection : MonoBehaviour
     }
     protected virtual void Completation()
     {
-        Destroy(item.transform.Find(LeftArrow.name));
-        Destroy(item.transform.Find(RightArrow.name));
-        Destroy(item.transform.Find(GuideText.name));
+        if (derivedFromItem)
+        {
+            LeftArrow.SetActive(false);
+            RightArrow.SetActive(false);
+            GuideText.SetActive(false);
+        }
+        else
+        {
+            Destroy(item.transform.Find(LeftArrow.name));
+            Destroy(item.transform.Find(RightArrow.name));
+            Destroy(item.transform.Find(GuideText.name));
+        }
     }
 
     protected virtual void OnDirectionSelected(SetDirectionComponent direction)
@@ -128,13 +139,4 @@ public class SetDirection : MonoBehaviour
         setting = false;
     }
 
-    protected void PrepareCollider(GameObject target)
-    {
-        var collider = target.AddComponent<BoxCollider2D>();
-        Sprite sprite = target.GetComponent<Sprite>();
-        float xSize = sprite.rect.width * target.transform.localScale.x;
-        float ySize = sprite.rect.height * target.transform.localScale.y;
-        collider.size = new Vector2(xSize, ySize);
-        collider.isTrigger = true;
-    }
 }
