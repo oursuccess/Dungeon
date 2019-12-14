@@ -4,8 +4,6 @@ using UnityEngine;
 
 public interface ICanSawPlayer 
 {
-
     void ISawPlayer(Player player);
-
     void ILosePlayer(Player player);
 }

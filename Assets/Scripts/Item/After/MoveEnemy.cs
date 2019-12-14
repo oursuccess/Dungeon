@@ -61,6 +61,10 @@ public abstract class MoveEnemy : MoveObject
     {
         StartMove();
     }
+    protected virtual void OnDisable()
+    {
+        StopAllCoroutines();
+    }
     public override void StartMove()
     {
         StartCoroutine(MovingImpl());
