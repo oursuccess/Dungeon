@@ -6,6 +6,7 @@ using UnityEngine;
 //加入了Find的能力和移动动画
 public abstract class MoveCharacter : MoveObject
 {
+    #region Var
     #region FindVar
     [SerializeField]
     protected float sight = 1;
@@ -15,16 +16,13 @@ public abstract class MoveCharacter : MoveObject
     #region AnimatorVar
     protected Animator animator;
     #endregion
+    #endregion
     protected override void Start()
     {
         animator = GetComponent<Animator>();
         sight *= sight;
         
         base.Start();
-    }
-    protected override void Update()
-    {
-        base.Update();
     }
     #region AutoMove(Add Animator)
     protected override void SimpleAutoMove(Vector2 direction)
@@ -56,7 +54,7 @@ public abstract class MoveCharacter : MoveObject
         animator.SetBool("Dead", true);
     }
     #endregion
-    #region Find
+    #region Find(Layer)
     protected bool Find(Vector2 direction, LayerMask layer, out RaycastHit2D hit)
     {
         Vector2 start = transform.position;

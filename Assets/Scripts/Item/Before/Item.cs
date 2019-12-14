@@ -4,15 +4,20 @@ using UnityEngine;
 
 public abstract class Item : MonoBehaviour
 {
+    #region Var
+    #region Event
     public delegate void ItemDragedEvent(Item item);
     public event ItemDragedEvent OnItemDraged;
-
+    #endregion
+    #region DragNBackToNormal
     private bool draged;
     protected Vector2 basePos;
-
+    #endregion
+    #region SetDirectionVar
     public bool DirectionNeedToSet;
     private SetDirection setDirection;
-
+    #endregion
+    #endregion
     protected virtual void Start()
     {
         basePos = transform.position;
@@ -30,7 +35,6 @@ public abstract class Item : MonoBehaviour
             setDirection.OnDirectionCompleted += OnDirectionSelectComplete;
         }
     }
-
     private void OnMouseEnter()
     {
         if (enabled && !draged)
@@ -38,7 +42,6 @@ public abstract class Item : MonoBehaviour
             gameObject.transform.localScale *= 1.1f;
         }
     }
-
     private void OnMouseOver()
     {
         if (enabled)
@@ -47,7 +50,7 @@ public abstract class Item : MonoBehaviour
             gameObject.transform.Rotate(new Vector3(0, 0, rotation));
         }
     }
-
+    #region DragNBackNSetDirection
     private void OnMouseDrag()
     {
         if (enabled && !draged)
@@ -56,26 +59,6 @@ public abstract class Item : MonoBehaviour
             transform.position = newPos;
         }
     }
-
-    private IEnumerator BackToBaseLocation()
-    {
-        Vector2 currPos = transform.position;
-        float distanceNow = (basePos - currPos).sqrMagnitude;
-
-        float x = basePos.x - currPos.x;
-        float y = basePos.y - currPos.y;
-        while (distanceNow >= 0.1f)
-        {
-            transform.Translate(new Vector2(x*Time.deltaTime, y*Time.deltaTime));
-            currPos = transform.position;
-            distanceNow = (basePos - currPos).sqrMagnitude;
-            yield return null;
-        }
-
-        transform.position = basePos;
-        yield return true;
-    }
-
     private void OnMouseExit()
     {
         if (enabled)
@@ -99,9 +82,27 @@ public abstract class Item : MonoBehaviour
             }
         }
     }
+    private IEnumerator BackToBaseLocation()
+    {
+        Vector2 currPos = transform.position;
+        float distanceNow = (basePos - currPos).sqrMagnitude;
 
-    private void OnDirectionSelectComplete()
+        float x = basePos.x - currPos.x;
+        float y = basePos.y - currPos.y;
+        while (distanceNow >= 0.1f)
+        {
+            transform.Translate(new Vector2(x*Time.deltaTime, y*Time.deltaTime));
+            currPos = transform.position;
+            distanceNow = (basePos - currPos).sqrMagnitude;
+            yield return null;
+        }
+
+        transform.position = basePos;
+        yield return true;
+    }
+    protected virtual void OnDirectionSelectComplete()
     {
         enabled = false;
     }
+    #endregion
 }

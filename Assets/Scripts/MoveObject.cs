@@ -5,40 +5,7 @@ using UnityEngine;
 //所有可移动物体都带有rigidbody2D
 public abstract class MoveObject : MonoBehaviour
 {
-    #region State
-    protected class MoveState
-    {
-        #region State
-        public int currState;
-        public int prevState;
-        #endregion
-        #region StateEnum
-        public static int Idle = 0;
-        public static int Move = 1;
-        public static int Jump = 2;
-        public static int Fall = 3;
-        #endregion
-        #region PublicInterface
-        public virtual void ChangeState(int state)
-        {
-            prevState = currState;
-            currState = state;
-        }
-        #endregion
-        #region event
-        public delegate void StateChangedDel(int state);
-        public event StateChangedDel StateChanged;
-        #endregion
-        #region InitState
-        public MoveState()
-        {
-            currState = Idle;
-            prevState = Idle;
-        }
-        #endregion
-    }
-    protected MoveState moveState;
-    #endregion
+    #region Var
     #region move
     [SerializeField]
     protected float moveTime = 1;
@@ -62,15 +29,12 @@ public abstract class MoveObject : MonoBehaviour
     public delegate void MovingDel(MoveObject moveObject);
     public event MovingDel Moving;
     #endregion
+    #endregion
     protected virtual void Start()
     {
-        moveState = new MoveState();
         lastMoveTime = 0;
         inverseMoveTime = 1 / moveTime;
         rigidBody2D = GetComponent<Rigidbody2D>();
-    }
-    protected virtual void Update()
-    {
     }
     #region AutoMove
     protected virtual void SimpleAutoMove(Vector2 direction)
@@ -95,14 +59,14 @@ public abstract class MoveObject : MonoBehaviour
     #region MoveInterface
     public virtual void StartMove()
     {
-        moveState.ChangeState(MoveState.Move);
+        canMove = true;
     }
     public virtual void StopMove()
     {
         if(moveRoutine != null)
         {
             StopCoroutine(moveRoutine);
-            moveState.ChangeState(MoveState.Idle)
+            canMove = false;
         }
     }
     #endregion
