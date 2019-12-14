@@ -65,8 +65,8 @@ public class SetDirection : MonoBehaviour
             if (itemSpriteRender != null)
             {
                 Sprite itemSprite = itemSpriteRender.sprite;
-                itemXD = itemSprite.rect.width * item.transform.localScale.x  * 2 / Camera.main.pixelWidth;
-                itemYD = itemSprite.rect.height * item.transform.localScale.y * 2 / Camera.main.pixelHeight;
+                itemXD = itemSprite.rect.width * item.transform.localScale.x  * 16 / Camera.main.pixelWidth;
+                itemYD = itemSprite.rect.height * item.transform.localScale.y * 16 / Camera.main.pixelHeight;
             }
             else
             {
@@ -75,9 +75,9 @@ public class SetDirection : MonoBehaviour
             }
 
             Vector2 itemPos = item.transform.position;
-            RightArrow.transform.position = new Vector2(itemPos.x + itemXD + 0.2f, itemPos.y - 0.1f);
-            LeftArrow.transform.position = new Vector2(itemPos.x - itemXD - 0.2f, itemPos.y - 0.1f);
-            GuideText.transform.position = new Vector2(itemPos.x, itemPos.y + itemYD + 0.2f);
+            RightArrow.transform.position = new Vector2(itemPos.x + itemXD + 1f, itemPos.y);
+            LeftArrow.transform.position = new Vector2(itemPos.x - itemXD - 1f, itemPos.y);
+            GuideText.transform.position = new Vector2(itemPos.x, itemPos.y + itemYD + 1f);
         }
 
         rightArrowComp = RightArrow.AddComponent<SetDirectionComponent>();
@@ -136,10 +136,12 @@ public class SetDirection : MonoBehaviour
         //根据方向为对应的移动组件赋值
         if(direction == rightArrowComp)
         {
+            item.gameObject.GetComponent<MoveEnemy>().direction = Vector2.right;
             Debug.Log("right");
         }
         else if(direction == leftArrowComp)
         {
+            item.gameObject.GetComponent<MoveEnemy>().direction = Vector2.left;
             Debug.Log("left");
         }
         Completation();

@@ -71,56 +71,62 @@ public class MoveSlime : MoveEnemy , ICanFindThings
     protected override IEnumerator MovingImpl()
     {
         GameObject target = null;
-        if(moveState.currState == MoveState.Idle || moveState.currState == MoveState.Move)
+        while (true)
         {
-            target = Find<Player>();
-            if (target != null)
+            if (moveState.currState == MoveState.Idle || moveState.currState == MoveState.Move)
             {
-                ChangeState(MoveState.FindPlayer);
+                target = Find<Player>();
+                if (target != null)
+                {
+                    ChangeState(MoveState.FindPlayer);
+                    yield return null;
+                }
+                else
+                {
+                    target = Find<IMadeByMetal>();
+                    if (target != null)
+                    {
+                        ChangeState(MoveState.FindMetal);
+                        yield return null;
+                    }
+                }
+           }
+            if (moveState.currState == MoveState.FindPlayer)
+            {
+                Move(target.transform.position - transform.position);
+                if (Find<Player>() == null)
+                {
+                    ChangeState(MoveState.LosePlayer);
+                }
                 yield return null;
             }
-            target = Find<IMadeByMetal>();
-            if(target != null)
+            if (moveState.currState == MoveState.FindMetal)
             {
-                ChangeState(MoveState.FindMetal);
+                Move(target.transform.position - transform.position);
+                if (Find<IMadeByMetal>() == null)
+                {
+                    ChangeState(MoveState.LoseMetal);
+                }
                 yield return null;
             }
-        }
-        if(moveState.currState == MoveState.FindPlayer)
-        {
-            Move(target.transform.position - transform.position);
-            if (Find<Player>() == null)
+            if (moveState.currState == MoveState.Fall)
             {
-                ChangeState(MoveState.LosePlayer);
+                yield return null;
+            }
+            if (moveState.currState == MoveState.LoseMetal)
+            {
+                LoseMetal();
+                ChangeState(MoveState.Idle);
+                yield return null;
+            }
+            if (moveState.currState == MoveState.LosePlayer)
+            {
+                LosePlayer();
+                ChangeState(MoveState.Idle);
+                yield return null;
             }
             yield return null;
         }
-        if(moveState.currState == MoveState.FindMetal)
-        {
-            Move(target.transform.position - transform.position);
-            if(Find<IMadeByMetal>() == null)
-            {
-                ChangeState(MoveState.LoseMetal);
-            }
-            yield return null;
-        }
-        if(moveState.currState == MoveState.Fall)
-        {
-            yield return null;
-        }
-        if(moveState.currState == MoveState.LoseMetal)
-        {
-            LoseMetal();
-            ChangeState(MoveState.Idle);
-            yield return null;
-        }
-        if(moveState.currState == MoveState.LosePlayer)
-        {
-            LosePlayer();
-            ChangeState(MoveState.Idle);
-            yield return null;
-        }
-        yield return null;
     }
     private void LoseMetal()
     {
@@ -130,25 +136,29 @@ public class MoveSlime : MoveEnemy , ICanFindThings
     }
     public GameObject Find<T>()
     {
+        collider2D.enabled = false;
         GameObject res = null;
         //查找相关内容
         RaycastHit2D hit;
         Vector2 start = transform.position;
         for(int i = 0; i <= sightRange / 2; i += 10)
         {
-            float f = i / 180;
-            hit = Physics2D.Linecast(start, start + sightDistance * new Vector2(Mathf.Max(0, moveDir.x - f), moveDir.y + f));
-            Debug.DrawRay(start, new Vector3(Mathf.Max(0, moveDir.x - f), moveDir.y + f), Color.red);
+            float f = (float)i / 180;
+            Vector2 dir = new Vector2(direction.x, direction.y + f);
+            hit = Physics2D.Raycast(start, dir, sightDistance);
             if(hit.collider == null)
             {
-                hit = Physics2D.Linecast(start, start + sightDistance * new Vector2(Mathf.Max(0, moveDir.x - f), moveDir.y - f));
+                hit = Physics2D.Raycast(start, dir, sightDistance);
             }
-            if(hit.collider != null && hit.collider.gameObject.GetComponent<T>() != null)
+            if (hit.collider != null && hit.collider.gameObject.GetComponent<T>() != null)
             {
                 res = hit.collider.gameObject;
+                Debug.Log(res);
+                collider2D.enabled = false;
+                return res;
             }
-            return res;
         }
+        collider2D.enabled = false;
         return res;
     }
     public void OnPlayerHit(Player player)

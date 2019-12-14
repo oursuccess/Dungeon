@@ -406,7 +406,7 @@ Transform:
   m_GameObject: {fileID: 685870050}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.7586547, y: -0.057080522, z: -0.19024022}
-  m_LocalScale: {x: 0.099999994, y: 0.099999994, z: 1}
+  m_LocalScale: {x: 0.1, y: 0.11, z: 1}
   m_Children: []
   m_Father: {fileID: 1932698340}
   m_RootOrder: 0
@@ -476,14 +476,14 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 4, y: 4}
+    oldSize: {x: 25, y: 25}
     newSize: {x: 4, y: 4}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 3, y: 2}
+  m_Size: {x: 15, y: 10}
   m_EdgeRadius: 0
 --- !u!1001 &808232910
 PrefabInstance:
@@ -497,15 +497,25 @@ PrefabInstance:
       propertyPath: m_Name
       value: ItemSlime
       objectReference: {fileID: 0}
+    - target: {fileID: 50746962966685258, guid: 3290b5b1b3744f848aa05ab86eb55462,
+        type: 3}
+      propertyPath: m_Constraints
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 50746962966685258, guid: 3290b5b1b3744f848aa05ab86eb55462,
+        type: 3}
+      propertyPath: m_GravityScale
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 4136703599418295972, guid: 3290b5b1b3744f848aa05ab86eb55462,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -1.26
       objectReference: {fileID: 0}
     - target: {fileID: 4136703599418295972, guid: 3290b5b1b3744f848aa05ab86eb55462,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 2.05
       objectReference: {fileID: 0}
     - target: {fileID: 4136703599418295972, guid: 3290b5b1b3744f848aa05ab86eb55462,
         type: 3}
@@ -583,22 +593,7 @@ MonoBehaviour:
   canMove: 1
   sightDistance: 5
   sightRange: 90
---- !u!58 &808232917
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 808232911}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  serializedVersion: 2
-  m_Radius: 0.24
+  direction: {x: -1, y: 0}
 --- !u!1 &1045441908
 GameObject:
   m_ObjectHideFlags: 0
@@ -997,14 +992,14 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 4, y: 4}
+    oldSize: {x: 25, y: 25}
     newSize: {x: 4, y: 4}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 3, y: 2}
+  m_Size: {x: 15, y: 10}
   m_EdgeRadius: 0
 --- !u!1001 &1690204520
 PrefabInstance:

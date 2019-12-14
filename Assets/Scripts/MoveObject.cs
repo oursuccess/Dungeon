@@ -105,10 +105,11 @@ public abstract class MoveObject : MonoBehaviour
     #endregion
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.transform.name.Contains("Ground"))
-        {
-            rigidBody2D.gravityScale = 0f;
-            rigidBody2D.MovePosition(new Vector2(transform.position.x, transform.position.y + 0.01f));
-        }
+        //
+        //if (collision.transform.name.Contains("Ground"))
+        //{
+        //    rigidBody2D.gravityScale = 0f;
+        //    rigidBody2D.MovePosition(new Vector2(transform.position.x, transform.position.y + 0.01f));
+        //}
     }
 }

@@ -37,7 +37,17 @@ public abstract class MoveEnemy : MoveObject
     [SerializeField]
     protected int sightRange;
     protected CircleCollider2D sightCollider;
+    public Vector2 direction;
     #endregion
+    #region Var
+    protected BoxCollider2D collider2D;
+    #endregion
+    protected override void Start()
+    {
+        collider2D = gameObject.GetComponent<BoxCollider2D>();
+
+        base.Start();
+    }
     protected virtual void OnEnable()
     {
         if(moveDir != Vector2.zero)
