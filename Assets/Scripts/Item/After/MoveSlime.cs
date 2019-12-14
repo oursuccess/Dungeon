@@ -1,8 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MoveSlime : MoveEnemy , ICanFindThings, IHandlePlayerHit, IHandlePlayerSought
+public class MoveSlime : MoveEnemy , ICanFindThings 
 {
     #region MoveState
     private class MoveState : BaseMoveState
@@ -10,24 +11,38 @@ public class MoveSlime : MoveEnemy , ICanFindThings, IHandlePlayerHit, IHandlePl
         public static int FindPlayer { get; private set; } = 0;
         public static int FindMetal { get; private set; } = 1;
         public static int BeenTrampled { get; private set; } = 2;
-        public new static ushort StateNums;
-        public new static Dictionary<string, int> States;
+        public static int LosePlayer { get; private set; } = 3;
+        public static int LoseMetal { get; private set; } = 4;
+        public static ushort StateNums;
+        public static Dictionary<string, int> States;
         public MoveState()
         {
             InitState();
+            currState = MoveState.Idle;
+            prevState = MoveState.Idle;
         }
-        public new void InitState()
+        public void InitState()
         {
-            base.InitState();
             if (States == null || States.Count != StateNums)
             {
-                States = BaseMoveState.States;
+                States = new Dictionary<string, int>();
+                var baseProperties = GetType().BaseType.GetProperties();
+                foreach(var baseProp in baseProperties) {
+                    if(baseProp.PropertyType == typeof(int))
+                    {
+                        if (!States.ContainsKey(baseProp.Name))
+                        {
+                            States.Add(baseProp.Name, (int)baseProp.GetValue(null));
+                        }
+                    }
+                    StateNums = (ushort)States.Count;
+                }
                 var properties = GetType().GetProperties();
                 foreach (var prop in properties)
                 {
                     if (prop.PropertyType == typeof(int))
                     {
-                        int propNo = (int)prop.GetValue(null) + BaseMoveState.StateNums;
+                        int propNo = (int)prop.GetValue(null) + StateNums;
                         prop.SetValue(null, propNo);
                         if (!States.ContainsKey(prop.Name))
                         {
@@ -48,37 +63,92 @@ public class MoveSlime : MoveEnemy , ICanFindThings, IHandlePlayerHit, IHandlePl
     protected override void Start()
     {
         moveState = new MoveState();
-        foreach(var state in MoveState.States)
-        {
-            Debug.Log("state: " + state.Key + "no: " + state.Value);
-        }
         base.Start();
+
+        StartMove();
     }
+
     protected override IEnumerator MovingImpl()
     {
+        GameObject target = null;
         if(moveState.currState == MoveState.Idle || moveState.currState == MoveState.Move)
         {
-            var player = Find<Player>();
-            if (player != null)
+            target = Find<Player>();
+            if (target != null)
             {
                 ChangeState(MoveState.FindPlayer);
-                Move(player.transform.position - transform.position);
                 yield return null;
             }
-            var metal = Find<IMadeByMetal>();
-            if(metal != null)
+            target = Find<IMadeByMetal>();
+            if(target != null)
             {
                 ChangeState(MoveState.FindMetal);
-                Move(metal.transform.position - transform.position);
                 yield return null;
             }
         }
+        if(moveState.currState == MoveState.FindPlayer)
+        {
+            Move(target.transform.position - transform.position);
+            if (Find<Player>() == null)
+            {
+                ChangeState(MoveState.LosePlayer);
+            }
+            yield return null;
+        }
+        if(moveState.currState == MoveState.FindMetal)
+        {
+            Move(target.transform.position - transform.position);
+            if(Find<IMadeByMetal>() == null)
+            {
+                ChangeState(MoveState.LoseMetal);
+            }
+            yield return null;
+        }
+        if(moveState.currState == MoveState.Fall)
+        {
+            yield return null;
+        }
+        if(moveState.currState == MoveState.LoseMetal)
+        {
+            LoseMetal();
+            ChangeState(MoveState.Idle);
+            yield return null;
+        }
+        if(moveState.currState == MoveState.LosePlayer)
+        {
+            LosePlayer();
+            ChangeState(MoveState.Idle);
+            yield return null;
+        }
         yield return null;
+    }
+    private void LoseMetal()
+    {
+    }
+    private void LosePlayer()
+    {
     }
     public GameObject Find<T>()
     {
         GameObject res = null;
         //查找相关内容
+        RaycastHit2D hit;
+        Vector2 start = transform.position;
+        for(int i = 0; i <= sightRange / 2; i += 10)
+        {
+            float f = i / 180;
+            hit = Physics2D.Linecast(start, start + sightDistance * new Vector2(Mathf.Max(0, moveDir.x - f), moveDir.y + f));
+            Debug.DrawRay(start, new Vector3(Mathf.Max(0, moveDir.x - f), moveDir.y + f), Color.red);
+            if(hit.collider == null)
+            {
+                hit = Physics2D.Linecast(start, start + sightDistance * new Vector2(Mathf.Max(0, moveDir.x - f), moveDir.y - f));
+            }
+            if(hit.collider != null && hit.collider.gameObject.GetComponent<T>() != null)
+            {
+                res = hit.collider.gameObject;
+            }
+            return res;
+        }
         return res;
     }
     public void OnPlayerHit(Player player)
@@ -86,20 +156,8 @@ public class MoveSlime : MoveEnemy , ICanFindThings, IHandlePlayerHit, IHandlePl
         var playerCollider = player.gameObject.GetComponent<BoxCollider2D>();
         Physics2D.IgnoreCollision(playerCollider, gameObject.GetComponent<BoxCollider2D>());
     }
-
     protected override void OnCollisionEnter2D(Collision2D collision)
     {
-        if(collision.gameObject.tag == "Enemy")
-        {
-            Effect(collision.gameObject);
-        }
         base.OnCollisionEnter2D(collision);
-    }
-    public void Effect(GameObject target)
-    {
-        transform.position = target.transform.position;
-        //应该由对象选择如何失效
-        Destroy(target.GetComponent<BoxCollider2D>());
-        enabled = false;
     }
 }

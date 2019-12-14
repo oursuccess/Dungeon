@@ -33,6 +33,7 @@ public abstract class MoveObject : MonoBehaviour
     protected virtual void Start()
     {
         lastMoveTime = 0;
+        moveDir = Vector2.zero;
         inverseMoveTime = 1 / moveTime;
         rigidBody2D = GetComponent<Rigidbody2D>();
     }
@@ -43,6 +44,8 @@ public abstract class MoveObject : MonoBehaviour
         {
             StopCoroutine(moveRoutine);
         }
+        moveDir = direction;
+        moveDir.Normalize();
         moveRoutine = StartCoroutine(AutoMoveTo(direction));
     }
     private IEnumerator AutoMoveTo(Vector2 direction)
@@ -77,6 +80,8 @@ public abstract class MoveObject : MonoBehaviour
         {
             StopCoroutine(moveRoutine);
         }
+        moveDir = direction;
+        moveDir.Normalize();
         moveRoutine = StartCoroutine(SmoothMovement(direction));
     }
     private IEnumerator SmoothMovement(Vector2 direction)

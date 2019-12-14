@@ -580,7 +580,25 @@ MonoBehaviour:
   moveTime: 1
   moveDistance: 1
   velocity: 1
-  canMove: 0
+  canMove: 1
+  sightDistance: 5
+  sightRange: 90
+--- !u!58 &808232917
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 808232911}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.24
 --- !u!1 &1045441908
 GameObject:
   m_ObjectHideFlags: 0

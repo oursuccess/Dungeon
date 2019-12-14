@@ -14,10 +14,7 @@ public abstract class MoveEnemy : MoveObject
         #region StateEnum
         public static int Idle { get; private set; } = 0;
         public static int Move { get; private set; } = 1;
-        public static int Jump { get; private set; } = 2;
-        public static int Fall { get; private set; } = 3;
-        public static ushort StateNums { private set; get; }
-        public static Dictionary<string, int> States { get; private set; }
+        public static int Fall { get; private set; } = 2;
         #endregion
         #region PublicInterface
         public virtual void ChangeState(int state)
@@ -30,36 +27,23 @@ public abstract class MoveEnemy : MoveObject
         public delegate void StateChangedDel(int state);
         public event StateChangedDel StateChanged;
         #endregion
-        #region InitState
-        public void InitState()
-        {
-            if(States == null || States.Count != StateNums)
-            {
-                var properties = GetType().GetProperties();
-                if (properties != null)
-                {
-                    States = new Dictionary<string, int>();
-                    foreach (var prop in properties)
-                    {
-                        if (prop.PropertyType == typeof(int))
-                        {
-                            States.Add(prop.Name, (int)prop.GetValue(null));
-                        }
-                    }
-                    StateNums = (ushort)States.Count;
-                }
-            }
-        }
-        public BaseMoveState()
-        {
-            InitState();
-        }
-        #endregion
     }
+    #endregion
+    #region Sight
+    [Tooltip("影响对象的视野距离，10为全屏范围")]
+    [SerializeField]
+    protected float sightDistance;
+    [Tooltip("影响视野范围，360表示所有角度均可观测，0表示前方一条线，90代表前方上下各45度")]
+    [SerializeField]
+    protected int sightRange;
+    protected CircleCollider2D sightCollider;
     #endregion
     protected virtual void OnEnable()
     {
-        StartMove();
+        if(moveDir != Vector2.zero)
+        {
+            StartMove();
+        }
     }
     protected virtual void OnDisable()
     {
