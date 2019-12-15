@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class MoveEnemy : MoveObject
+public abstract class MoveItem : MoveObject
 {
     #region State
     protected class BaseMoveState
@@ -40,11 +40,11 @@ public abstract class MoveEnemy : MoveObject
     public Vector2 direction;
     #endregion
     #region Var
-    protected BoxCollider2D collider2D;
+    protected BoxCollider2D boxcollider2D;
     #endregion
     protected override void Start()
     {
-        collider2D = gameObject.GetComponent<BoxCollider2D>();
+        boxcollider2D = gameObject.GetComponent<BoxCollider2D>();
 
         base.Start();
     }

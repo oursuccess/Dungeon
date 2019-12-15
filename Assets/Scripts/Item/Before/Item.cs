@@ -6,8 +6,10 @@ public abstract class Item : MonoBehaviour
 {
     #region Var
     #region Event
-    public delegate void ItemDragedEvent(Item item);
-    public event ItemDragedEvent OnItemDraged;
+    public delegate void ItemDragedEventDel(Item item);
+    public event ItemDragedEventDel OnItemDraged;
+    public delegate void ItemDirectionSettedDel(Item item);
+    public event ItemDirectionSettedDel OnDirectionSetComplete;
     #endregion
     #region DragNBackToNormal
     private bool draged;
@@ -17,11 +19,15 @@ public abstract class Item : MonoBehaviour
     public bool DirectionNeedToSet;
     private SetDirection setDirection;
     #endregion
+    #region baseScale
+    Vector2 localScale;
+    #endregion
     #endregion
     protected virtual void Start()
     {
         basePos = transform.position;
         draged = false;
+        localScale = transform.localScale;
 
         if (DirectionNeedToSet)
         {
@@ -42,15 +48,18 @@ public abstract class Item : MonoBehaviour
             gameObject.transform.localScale *= 1.1f;
         }
     }
-    private void OnMouseOver()
-    {
-        if (enabled)
-        {
-            float rotation = Random.Range(-1f, 1f) * 5;
-            gameObject.transform.Rotate(new Vector3(0, 0, rotation));
-        }
-    }
-    #region DragNBackNSetDirection
+    #region Old
+    //Old
+    //private void OnMouseOver()
+    //{
+    //    if (enabled)
+    //    {
+    //        float rotation = Random.Range(-1f, 1f) * 5;
+    //        gameObject.transform.Rotate(new Vector3(0, 0, rotation));
+    //    }
+    //}
+    #endregion
+    #region DragNBack
     private void OnMouseDrag()
     {
         if (enabled && !draged)
@@ -63,7 +72,7 @@ public abstract class Item : MonoBehaviour
     {
         if (enabled)
         {
-            gameObject.transform.localScale /= 1.1f;
+            gameObject.transform.localScale = localScale;
             gameObject.transform.rotation = Quaternion.identity;
 
             if (!draged)
@@ -71,7 +80,7 @@ public abstract class Item : MonoBehaviour
                 Vector2 newPos = transform.position;
                 if ((newPos - basePos).sqrMagnitude >= 1f)
                 {
-                    basePos = newPos;
+                    basePos = new Vector3(newPos.x, basePos.y);
                     draged = true;
                     OnItemDraged?.Invoke(this);
                 }
@@ -100,9 +109,11 @@ public abstract class Item : MonoBehaviour
         transform.position = basePos;
         yield return true;
     }
+    #endregion
+    #region SetDirectionComplete
     protected virtual void OnDirectionSelectComplete()
     {
-        enabled = false;
+        OnDirectionSetComplete?.Invoke(this);
     }
     #endregion
 }

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MoveSlime : MoveEnemy , ICanFindThings 
+public class MoveSlime : MoveItem, ICanFindThings 
 {
     #region MoveState
     private class MoveState : BaseMoveState
@@ -67,7 +67,6 @@ public class MoveSlime : MoveEnemy , ICanFindThings
 
         StartMove();
     }
-
     protected override IEnumerator MovingImpl()
     {
         GameObject target = null;
@@ -136,7 +135,7 @@ public class MoveSlime : MoveEnemy , ICanFindThings
     }
     public GameObject Find<T>()
     {
-        collider2D.enabled = false;
+        boxcollider2D.enabled = false;
         GameObject res = null;
         //查找相关内容
         RaycastHit2D hit;
@@ -153,12 +152,11 @@ public class MoveSlime : MoveEnemy , ICanFindThings
             if (hit.collider != null && hit.collider.gameObject.GetComponent<T>() != null)
             {
                 res = hit.collider.gameObject;
-                Debug.Log(res);
-                collider2D.enabled = false;
+                boxcollider2D.enabled = true;
                 return res;
             }
         }
-        collider2D.enabled = false;
+        boxcollider2D.enabled = true;
         return res;
     }
     public void OnPlayerHit(Player player)
