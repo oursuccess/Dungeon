@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,8 +21,11 @@ public class ItemController : MonoBehaviour
 
         public void changeNum(int addition)
         {
-            num += addition;
-            numT.text = num.ToString();
+            if(num + addition >= 0)
+            {
+                num += addition;
+                numT.text = num.ToString();
+            }
         }
     }
     #region Var
@@ -36,6 +40,7 @@ public class ItemController : MonoBehaviour
     private List<MoveItem> displayingMoveItems;
     private List<Item> spawnedItems;
     private List<MoveItem> spawnedMoveItems;
+    private Dictionary<string, Pool> allItemPool;
     #endregion
     #region UIPos
     private Camera cam;
@@ -57,6 +62,7 @@ public class ItemController : MonoBehaviour
         displayingMoveItems = new List<MoveItem>();
         spawnedItems = new List<Item>();
         spawnedMoveItems = new List<MoveItem>();
+        allItemPool = new Dictionary<string, Pool>();
 
         numText = CrossCanvasController.Instance.ItemNumText.GetComponent<Text>();
 
@@ -71,7 +77,11 @@ public class ItemController : MonoBehaviour
             if(item != null)
             {
                 SetNumText(item, i);
-                SpawnDisplayingItem(item, i);
+                Pool itemPool = gameObject.AddComponent<Pool>();
+                itemPool.Init(obj, itemNum, itemNum, 0, true);
+                allItemPool.Add(obj.name, itemPool);
+                GameObject newItemObj = itemPool.Get(0);
+                HandleNewItem(newItemObj);
             }
             ++i;
         }
@@ -95,6 +105,20 @@ public class ItemController : MonoBehaviour
         xBegin = cam.ViewportToWorldPoint(new Vector3(0, 0, 0)).x + 1;
         yBegin = cam.ViewportToWorldPoint(new Vector3(0, 1, 0)).y - 1;
     }
+    private void HandleNewItem(GameObject newItemObj)
+    {
+        Item it = newItemObj.GetComponent<Item>();
+        HandleDisplayingItemPosition(it);
+        it.OnItemDraged += OnItemDraged;
+        displayingItems.Add(it);
+        if (it.DirectionNeedToSet)
+        {
+            var moveItem = newItemObj.GetComponent<MoveItem>();
+            displayingMoveItems.Add(moveItem);
+            moveItem.enabled = false;
+            it.OnDirectionSetComplete += SetItemMove;
+        }
+    }
     private void HandleDisplayingItemPosition(Item item)
     {
         var attr = itemControllerDics[item.name];
@@ -104,43 +128,51 @@ public class ItemController : MonoBehaviour
         attr.numT.transform.position = cam.WorldToScreenPoint(new Vector3(xPos + xInterD / 4, yPos - xInterD / 4));
     }
     #endregion
+    private void HandleOldItem(Item item)
+    {
+        displayingItems.Remove(item);
+        spawnedItems.Add(item);
+        item.OnItemDraged -= OnItemDraged;
+        var attr = itemControllerDics[item.name];
+        attr.changeNum(-1);
+    }
     private void OnItemDraged(Item item)
     {
         if (itemControllerDics.ContainsKey(item.name))
         {
-            var attr = itemControllerDics[item.name];
-            SpawnDisplayingItem(item, attr.index);
-  
-            displayingItems.Remove(item);
-            spawnedItems.Add(item);
-            item.OnItemDraged -= OnItemDraged;
+            HandleOldItem(item);
+            GameObject newItemObj = allItemPool[item.gameObject.name].Get();
+            HandleNewItem(newItemObj);
         }
     }
-    private void SpawnDisplayingItem(Item item, int itemIndexInUI)
-    {
-        float xPos = xBegin + itemIndexInUI * xInterD;
-        float yPos = yBegin;
+    #region Old
+    ////private void SpawnDisplayingItem(Item item, int itemIndexInUI)
+    //{
+    //    float xPos = xBegin + itemIndexInUI * xInterD;
+    //    float yPos = yBegin;
 
-        var obj = Instantiate(item.gameObject, new Vector2(xPos, yPos), Quaternion.identity);
-        obj.name = item.name;
-        var it = obj.GetComponent<Item>();
-        it.OnItemDraged += OnItemDraged;
-        displayingItems.Add(it);
-        if(it.DirectionNeedToSet == true)
-        {
-            var moveItem = obj.GetComponent<MoveItem>();
-            displayingMoveItems.Add(moveItem);
-            moveItem.enabled = false;
-            it.OnDirectionSetComplete += SetItemMove;
-        }
+    //    //所有的史莱姆一模一样 脚本的开关与否也相同了 需要使用池
+    //    var obj = Instantiate(item.gameObject, new Vector2(xPos, yPos), Quaternion.identity);
+    //    obj.name = item.name;
+    //    var it = obj.GetComponent<Item>();
+    //    it.OnItemDraged += OnItemDraged;
+    //    displayingItems.Add(it);
+    //    if(it.DirectionNeedToSet == true)
+    //    {
+    //        var moveItem = obj.GetComponent<MoveItem>();
+    //        displayingMoveItems.Add(moveItem);
+    //        moveItem.enabled = false;
+    //        it.OnDirectionSetComplete += SetItemMove;
+    //    }
 
-        var attr = itemControllerDics[item.name];
-        attr.changeNum(-1);
-        if(attr.num <= 0)
-        {
-            it.enabled = false;
-        }
-    }
+    //    var attr = itemControllerDics[item.name];
+    //    attr.changeNum(-1);
+    //    if(attr.num <= 0)
+    //    {
+    //        it.enabled = false;
+    //    }
+    //}
+    #endregion
     private void SetNumText(Item item, int itemIndexInUI)
     {
         #region SetNumText

@@ -3,8 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[Serializable]
-public class Pool<T> : MonoBehaviour 
+public class Pool : MonoBehaviour 
 {
     protected Queue<GameObject> queue = new Queue<GameObject>();
 
@@ -18,7 +17,7 @@ public class Pool<T> : MonoBehaviour
     [SerializeField]
     private GameObject prefab;
 
-    public Pool(GameObject prefab = null, int preAllocCount = 20, int maxOpacity = 100, int autoIncreCount = 3, bool bInit = true)
+    public void Init(GameObject prefab = null, int preAllocCount = 20, int maxOpacity = 100, int autoIncreCount = 3, bool bInit = true) 
     {
         this.prefab = prefab;
         this.autoIncreCount = autoIncreCount;
@@ -31,7 +30,7 @@ public class Pool<T> : MonoBehaviour
     {
         if (time < 0) return null;
 
-        GameObject res = null;
+        GameObject res;
         if (freeCount > 0)
         {
             res = queue.Dequeue();
@@ -68,8 +67,12 @@ public class Pool<T> : MonoBehaviour
 
             for (int i = 0; i < freeCount; ++i)
             {
+                objects[i] = Instantiate(prefab, transform);
+                objects[i].SetActive(false);
+                objects[i].name = prefab.name;
                 queue.Enqueue(objects[i]);
             }
+            objects[freeCount] = Instantiate(prefab, transform);
             res = objects[freeCount];
         }
         else
