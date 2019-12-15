@@ -205,12 +205,20 @@ public class ItemController : MonoBehaviour
         if (displayingMoveItems.Contains(moveItem))
         {
 #endif
-            moveItem.enabled = true;
+            HandleMoveItem(moveItem);
             displayingMoveItems.Remove(moveItem);
             spawnedMoveItems.Add(moveItem);
 #if UNITY_EDITOR
         }
 #endif
         item.enabled = false;
+    }
+
+    private void HandleMoveItem(MoveItem mItem)
+    {
+        mItem.enabled = true;
+        var mRigidbody = mItem.gameObject.AddComponent<Rigidbody2D>();
+        mRigidbody.freezeRotation = true;
+        mRigidbody.gravityScale = 1f;
     }
 }

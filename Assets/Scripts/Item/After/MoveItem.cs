@@ -39,9 +39,6 @@ public abstract class MoveItem : MoveObject
     protected CircleCollider2D sightCollider;
     public Vector2 direction;
     #endregion
-    #region Var
-    protected BoxCollider2D boxcollider2D;
-    #endregion
     protected override void Start()
     {
         boxcollider2D = gameObject.GetComponent<BoxCollider2D>();

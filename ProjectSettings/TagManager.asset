@@ -16,7 +16,7 @@ TagManager:
   - 
   - 
   - Player
-  - InDestroyBlock
+  - Ground
   - CanDestroyBlock
   - Enemy
   - 

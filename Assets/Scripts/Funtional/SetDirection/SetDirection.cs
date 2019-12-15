@@ -122,12 +122,10 @@ public class SetDirection : MonoBehaviour
         if(direction == rightArrowComp)
         {
             item.gameObject.GetComponent<MoveItem>().direction = Vector2.right;
-            Debug.Log("right");
         }
         else if(direction == leftArrowComp)
         {
             item.gameObject.GetComponent<MoveItem>().direction = Vector2.left;
-            Debug.Log("left");
         }
         rightArrowComp.OnDirectionSelected -= OnDirectionSelected;
         leftArrowComp.OnDirectionSelected -= OnDirectionSelected;

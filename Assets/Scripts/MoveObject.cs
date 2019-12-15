@@ -24,10 +24,14 @@ public abstract class MoveObject : MonoBehaviour
     #endregion
     #region object
     protected Rigidbody2D rigidBody2D;
+    protected BoxCollider2D boxcollider2D;
     #endregion
     #region event
     public delegate void MovingDel(MoveObject moveObject);
     public event MovingDel Moving;
+    #endregion
+    #region Layer
+    LayerMask layer;
     #endregion
     #endregion
     protected virtual void Start()
@@ -46,15 +50,13 @@ public abstract class MoveObject : MonoBehaviour
         }
         moveDir = direction;
         moveDir.Normalize();
-        moveRoutine = StartCoroutine(AutoMoveTo(direction));
+        StartCoroutine(AutoMoveTo(direction));
     }
     private IEnumerator AutoMoveTo(Vector2 direction)
     {
-        while (true)
+        while (canMove)
         {
-            Vector2 start = transform.position;
-            rigidBody2D.MovePosition(start + direction * velocity * Time.deltaTime);
-            Moving?.Invoke(this);
+            Invoke("Move", 1f);
             yield return null;
         }
     }
@@ -76,13 +78,17 @@ public abstract class MoveObject : MonoBehaviour
     #region Move
     protected virtual void Move(Vector2 direction)
     {
+        moveDir = direction;
+        moveDir.Normalize();
+        Move();
+    }
+    protected virtual void Move()
+    {
         if(moveRoutine != null)
         {
             StopCoroutine(moveRoutine);
         }
-        moveDir = direction;
-        moveDir.Normalize();
-        moveRoutine = StartCoroutine(SmoothMovement(direction));
+        moveRoutine = StartCoroutine(SmoothMovement(moveDir));
     }
     private IEnumerator SmoothMovement(Vector2 direction)
     {
@@ -105,11 +111,37 @@ public abstract class MoveObject : MonoBehaviour
     #endregion
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
-        //
         //if (collision.transform.name.Contains("Ground"))
         //{
-        //    rigidBody2D.gravityScale = 0f;
         //    rigidBody2D.MovePosition(new Vector2(transform.position.x, transform.position.y + 0.01f));
         //}
+    }
+    protected virtual bool FindThingOnDirection(LayerMask layer, Vector2 direction, float distance, out RaycastHit2D hit)
+    {
+        Vector2 start = transform.position;
+        Vector2 end = start + direction * distance;
+        boxcollider2D.enabled = false;
+        hit = Physics2D.Linecast(start, end, layer);
+        boxcollider2D.enabled = true;
+        if(hit.collider != null)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    protected virtual GameObject FindAnythingOnDirection(Vector2 direction, float distance)
+    {
+        GameObject res = null;
+        boxcollider2D.enabled = false;
+        var hit = Physics2D.Raycast(transform.position, direction * distance);
+        boxcollider2D.enabled = true;
+        if(hit.collider != null)
+        {
+            res = hit.collider.gameObject;
+        }
+        return res;
     }
 }

@@ -60,6 +60,12 @@ public class MoveSlime : MoveItem, ICanFindThings
         moveState.ChangeState(state);
     }
     #endregion
+    #region Var
+    [SerializeField]
+    [Range(0, 100)]
+    [Tooltip("史莱姆移动的意愿")]
+    private int moveWill;
+    #endregion
     protected override void Start()
     {
         moveState = new MoveState();
@@ -74,22 +80,44 @@ public class MoveSlime : MoveItem, ICanFindThings
         {
             if (moveState.currState == MoveState.Idle || moveState.currState == MoveState.Move)
             {
-                target = Find<Player>();
-                if (target != null)
+                target = FindAnythingOnDirection(Vector2.down, 2f);
+                if (target == null)
                 {
-                    ChangeState(MoveState.FindPlayer);
-                    yield return null;
+                    ChangeState(MoveState.Fall);
                 }
                 else
                 {
-                    target = Find<IMadeByMetal>();
+                    target = Find<Player>();
                     if (target != null)
                     {
-                        ChangeState(MoveState.FindMetal);
+                        ChangeState(MoveState.FindPlayer);
                         yield return null;
                     }
+                    else
+                    {
+                        target = Find<IMadeByMetal>();
+                        if (target != null)
+                        {
+                            ChangeState(MoveState.FindMetal);
+                            yield return null;
+                        }
+                    }
+                    if (target == null)
+                    {
+                        if (UnityEngine.Random.Range(0, 100) <= moveWill)
+                        {
+                            Move(direction);
+                            ChangeState(MoveState.Move);
+                            yield return null;
+                        }
+                        else
+                        {
+                            ChangeState(MoveState.Idle);
+                            yield return null;
+                        }
+                    }
                 }
-           }
+            }
             if (moveState.currState == MoveState.FindPlayer)
             {
                 Move(target.transform.position - transform.position);
@@ -110,6 +138,11 @@ public class MoveSlime : MoveItem, ICanFindThings
             }
             if (moveState.currState == MoveState.Fall)
             {
+                target = FindAnythingOnDirection(Vector2.down, 1.5f);
+                if(target != null)
+                {
+                    ChangeState(MoveState.Idle);
+                }
                 yield return null;
             }
             if (moveState.currState == MoveState.LoseMetal)

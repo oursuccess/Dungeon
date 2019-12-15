@@ -71,7 +71,6 @@ public abstract class Item : MonoBehaviour
         {
             state = ItemState.draging;
             Vector2 newPos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y));
-            Debug.Log(newPos);
             transform.position = newPos;
         }
     }

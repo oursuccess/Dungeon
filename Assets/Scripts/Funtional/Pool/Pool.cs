@@ -47,7 +47,7 @@ public class Pool : MonoBehaviour
 
     protected virtual GameObject Alloc()
     {
-        GameObject res;
+        GameObject res = null;
         if (opacityCount <= maxOpacity)
         {
             GameObject[] objects;
@@ -72,16 +72,22 @@ public class Pool : MonoBehaviour
                 objects[i].name = prefab.name;
                 queue.Enqueue(objects[i]);
             }
-            objects[freeCount] = Instantiate(prefab, transform);
-            res = objects[freeCount];
+            if(objects != null && objects.Length > freeCount && freeCount >= 0)
+            {
+                objects[freeCount] = Instantiate(prefab, transform);
+                res = objects[freeCount];
+            }
         }
         else
         {
             res = Instantiate(prefab, transform);
         }
 
-        res.SetActive(false);
-        res.name = prefab.name;
+        if(res != null)
+        {
+            res.SetActive(false);
+            res.name = prefab.name;
+        }
 
         return res;
     }

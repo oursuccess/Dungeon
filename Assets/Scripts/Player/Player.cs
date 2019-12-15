@@ -28,7 +28,6 @@ public class Player : MoveCharacter
         animator.enabled = false;
         moveDir = Vector2.right;
 
-        SimpleAutoMove(moveDir);
     }
     protected override void SimpleAutoMove(Vector2 direction)
     {
@@ -79,12 +78,11 @@ public class Player : MoveCharacter
         {
             hit.OnPlayerHit(this);
         }
-
-        //else if (canMove && collision.transform.name.Contains("Ground"))
-        //{
-        //    animator.enabled = true;
-        //    SimpleAutoMove(moveDir);
-        //}
+        else if (canMove && collision.transform.name.Contains("Ground"))
+        {
+            animator.enabled = true;
+            SimpleAutoMove(moveDir);
+        }
 
         base.OnCollisionEnter2D(collision);
     }
