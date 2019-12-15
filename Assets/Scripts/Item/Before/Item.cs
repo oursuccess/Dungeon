@@ -31,11 +31,8 @@ public abstract class Item : MonoBehaviour
 
         if (DirectionNeedToSet)
         {
-            setDirection = gameObject.GetComponent<SetDirection>();
-            if(setDirection == null)
-            {
-                setDirection = GameObject.Find("ItemDirectionComponent").GetComponent<SetDirection>(); 
-            }
+            setDirection = gameObject.AddComponent<SetDirection>();
+
             OnItemDraged += setDirection.SetDirectionOfTarget;
 
             setDirection.OnDirectionCompleted += OnDirectionSelectComplete;
@@ -48,17 +45,6 @@ public abstract class Item : MonoBehaviour
             gameObject.transform.localScale *= 1.1f;
         }
     }
-    #region Old
-    //Old
-    //private void OnMouseOver()
-    //{
-    //    if (enabled)
-    //    {
-    //        float rotation = Random.Range(-1f, 1f) * 5;
-    //        gameObject.transform.Rotate(new Vector3(0, 0, rotation));
-    //    }
-    //}
-    #endregion
     #region DragNBack
     private void OnMouseDrag()
     {
@@ -83,6 +69,7 @@ public abstract class Item : MonoBehaviour
                     basePos = new Vector3(newPos.x, basePos.y);
                     draged = true;
                     OnItemDraged?.Invoke(this);
+                    OnItemDraged -= setDirection.SetDirectionOfTarget;
                 }
                 else
                 {
@@ -114,6 +101,7 @@ public abstract class Item : MonoBehaviour
     protected virtual void OnDirectionSelectComplete()
     {
         OnDirectionSetComplete?.Invoke(this);
+        setDirection.OnDirectionCompleted -= OnDirectionSelectComplete;
     }
     #endregion
 }

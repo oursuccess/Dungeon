@@ -110,6 +110,7 @@ public class ItemController : MonoBehaviour
         Item it = newItemObj.GetComponent<Item>();
         HandleDisplayingItemPosition(it);
         it.OnItemDraged += OnItemDraged;
+        it.transform.parent = null;
         displayingItems.Add(it);
         if (it.DirectionNeedToSet)
         {
@@ -191,6 +192,7 @@ public class ItemController : MonoBehaviour
     }
     private void SetItemMove(Item item)
     {
+        item.OnDirectionSetComplete -= SetItemMove;
         var moveItem = item.gameObject.GetComponent<MoveItem>();
 #if UNITY_EDITOR
         if (displayingMoveItems.Contains(moveItem))

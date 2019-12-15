@@ -6,11 +6,8 @@ using UnityEngine;
 public class SetDirection : MonoBehaviour
 {
     #region AssignProps
-    [SerializeField]
     private GameObject RightArrow;
-    [SerializeField]
     private GameObject LeftArrow;
-    [SerializeField]
     private GameObject GuideText;
     #endregion
     #region CanAssignProps
@@ -47,38 +44,34 @@ public class SetDirection : MonoBehaviour
     }
     protected virtual void Preparations()
     {
-        if(RightArrow == null || LeftArrow == null)
+        derivedFromItem = false;
+
+        GameObject itemDirectionComponent = GameObject.Find("ItemDirectionComponent");
+        RightArrow = itemDirectionComponent.transform.Find("RightArrow").gameObject;
+        LeftArrow = itemDirectionComponent.transform.Find("LeftArrow").gameObject;
+        GuideText = itemDirectionComponent.transform.Find("GuideText").gameObject;
+        RightArrow = Instantiate(RightArrow, item.transform);
+        LeftArrow = Instantiate(LeftArrow, item.transform);
+        GuideText = Instantiate(GuideText, item.transform);
+
+        float itemXD, itemYD;
+        var itemSpriteRender = item.gameObject.GetComponent<SpriteRenderer>();
+        if (itemSpriteRender != null)
         {
-            derivedFromItem = false;
-
-            //Need To Clean
-            GameObject itemDirectionComponent = GameObject.Find("ItemDirectionComponent");
-            RightArrow = itemDirectionComponent.transform.Find("RightArrow").gameObject;
-            LeftArrow = itemDirectionComponent.transform.Find("LeftArrow").gameObject;
-            GuideText = itemDirectionComponent.transform.Find("GuideText").gameObject;
-            RightArrow = Instantiate(RightArrow, item.transform);
-            LeftArrow = Instantiate(LeftArrow, item.transform);
-            GuideText = Instantiate(GuideText, item.transform);
-
-            float itemXD, itemYD;
-            var itemSpriteRender = item.gameObject.GetComponent<SpriteRenderer>();
-            if (itemSpriteRender != null)
-            {
-                Sprite itemSprite = itemSpriteRender.sprite;
-                itemXD = itemSprite.rect.width * item.transform.localScale.x  * 16 / Camera.main.pixelWidth;
-                itemYD = itemSprite.rect.height * item.transform.localScale.y * 16 / Camera.main.pixelHeight;
-            }
-            else
-            {
-                itemXD = item.transform.localScale.x / 2;
-                itemYD = item.transform.localScale.y / 2;
-            }
-
-            Vector2 itemPos = item.transform.position;
-            RightArrow.transform.position = new Vector2(itemPos.x + itemXD + 1f, itemPos.y);
-            LeftArrow.transform.position = new Vector2(itemPos.x - itemXD - 1f, itemPos.y);
-            GuideText.transform.position = new Vector2(itemPos.x, itemPos.y + itemYD + 1f);
+            Sprite itemSprite = itemSpriteRender.sprite;
+            itemXD = itemSprite.rect.width * item.transform.localScale.x * 16 / Camera.main.pixelWidth;
+            itemYD = itemSprite.rect.height * item.transform.localScale.y * 16 / Camera.main.pixelHeight;
         }
+        else
+        {
+            itemXD = item.transform.localScale.x / 2;
+            itemYD = item.transform.localScale.y / 2;
+        }
+
+        Vector2 itemPos = item.transform.position;
+        RightArrow.transform.position = new Vector2(itemPos.x + itemXD + 1f, itemPos.y);
+        LeftArrow.transform.position = new Vector2(itemPos.x - itemXD - 1f, itemPos.y);
+        GuideText.transform.position = new Vector2(itemPos.x, itemPos.y + itemYD + 1f);
 
         rightArrowComp = RightArrow.AddComponent<SetDirectionComponent>();
         leftArrowComp = LeftArrow.AddComponent<SetDirectionComponent>();
@@ -116,18 +109,10 @@ public class SetDirection : MonoBehaviour
     protected virtual void Completation()
     {
         StopCoroutine(textSplashRoutine);
-        if (derivedFromItem)
-        {
-            LeftArrow.SetActive(false);
-            RightArrow.SetActive(false);
-            GuideText.SetActive(false);
-        }
-        else
-        {
-            Destroy(item.transform.Find(LeftArrow.name).gameObject);
-            Destroy(item.transform.Find(RightArrow.name).gameObject);
-            Destroy(item.transform.Find(GuideText.name).gameObject);
-        }
+
+        Destroy(item.transform.Find(LeftArrow.name).gameObject);
+        Destroy(item.transform.Find(RightArrow.name).gameObject);
+        Destroy(item.transform.Find(GuideText.name).gameObject);
 
         OnDirectionCompleted?.Invoke();
     }
@@ -144,6 +129,9 @@ public class SetDirection : MonoBehaviour
             item.gameObject.GetComponent<MoveItem>().direction = Vector2.left;
             Debug.Log("left");
         }
+        rightArrowComp.OnDirectionSelected -= OnDirectionSelected;
+        leftArrowComp.OnDirectionSelected -= OnDirectionSelected;
+
         Completation();
         setting = false;
     }
