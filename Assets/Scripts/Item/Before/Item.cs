@@ -12,7 +12,13 @@ public abstract class Item : MonoBehaviour
     public event ItemDirectionSettedDel OnDirectionSetComplete;
     #endregion
     #region DragNBackToNormal
-    private bool draged;
+    public enum ItemState
+    {
+        idle,
+        draging,
+        draged,
+    }
+    public ItemState state;
     protected Vector2 basePos;
     #endregion
     #region SetDirectionVar
@@ -26,7 +32,7 @@ public abstract class Item : MonoBehaviour
     protected virtual void Start()
     {
         basePos = transform.position;
-        draged = false;
+        state = ItemState.idle;
         localScale = transform.localScale;
 
         if (DirectionNeedToSet)
@@ -40,17 +46,32 @@ public abstract class Item : MonoBehaviour
     }
     private void OnMouseEnter()
     {
-        if (enabled && !draged)
+        if (enabled && state != ItemState.draged)
         {
             gameObject.transform.localScale *= 1.1f;
         }
     }
+    #region interface
+    public void UpdateBasePos(Vector2 pos)
+    {
+        basePos = pos;
+    }
+    public void UpdatePos(Vector2 pos)
+    {
+        if(state == ItemState.idle)
+        {
+            transform.position = pos;
+        }
+    }
+    #endregion
     #region DragNBack
     private void OnMouseDrag()
     {
-        if (enabled && !draged)
+        if (enabled && state != ItemState.draged)
         {
+            state = ItemState.draging;
             Vector2 newPos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y));
+            Debug.Log(newPos);
             transform.position = newPos;
         }
     }
@@ -61,13 +82,13 @@ public abstract class Item : MonoBehaviour
             gameObject.transform.localScale = localScale;
             gameObject.transform.rotation = Quaternion.identity;
 
-            if (!draged)
+            if (state == ItemState.draging)
             {
                 Vector2 newPos = transform.position;
                 if ((newPos - basePos).sqrMagnitude >= 1f)
                 {
                     basePos = new Vector3(newPos.x, basePos.y);
-                    draged = true;
+                    state = ItemState.draged;
                     OnItemDraged?.Invoke(this);
                     OnItemDraged -= setDirection.SetDirectionOfTarget;
                 }

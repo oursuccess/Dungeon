@@ -108,7 +108,7 @@ public class ItemController : MonoBehaviour
     private void HandleNewItem(GameObject newItemObj)
     {
         Item it = newItemObj.GetComponent<Item>();
-        HandleDisplayingItemPosition(it);
+        HandleNewItemPosition(it);
         it.OnItemDraged += OnItemDraged;
         it.transform.parent = null;
         displayingItems.Add(it);
@@ -125,8 +125,16 @@ public class ItemController : MonoBehaviour
         var attr = itemControllerDics[item.name];
         float xPos = xBegin + attr.index * xInterD;
         float yPos = yBegin;
-        item.transform.position = new Vector3(xPos, yPos);
+        item.UpdateBasePos(new Vector2(xPos, yPos));
+        item.UpdatePos(new Vector2(xPos, yPos));
         attr.numT.transform.position = cam.WorldToScreenPoint(new Vector3(xPos + xInterD / 4, yPos - xInterD / 4));
+    }
+    private void HandleNewItemPosition(Item item)
+    {
+        var attr = itemControllerDics[item.name];
+        float xPos = xBegin + attr.index * xInterD;
+        float yPos = yBegin;
+        item.transform.position = new Vector3(xPos, yPos);
     }
     #endregion
     private void HandleOldItem(Item item)
@@ -152,7 +160,6 @@ public class ItemController : MonoBehaviour
     //    float xPos = xBegin + itemIndexInUI * xInterD;
     //    float yPos = yBegin;
 
-    //    //所有的史莱姆一模一样 脚本的开关与否也相同了 需要使用池
     //    var obj = Instantiate(item.gameObject, new Vector2(xPos, yPos), Quaternion.identity);
     //    obj.name = item.name;
     //    var it = obj.GetComponent<Item>();
