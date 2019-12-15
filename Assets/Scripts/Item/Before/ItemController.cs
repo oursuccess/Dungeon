@@ -150,8 +150,11 @@ public class ItemController : MonoBehaviour
         if (itemControllerDics.ContainsKey(item.name))
         {
             HandleOldItem(item);
-            GameObject newItemObj = allItemPool[item.gameObject.name].Get();
-            HandleNewItem(newItemObj);
+            if(itemControllerDics[item.name].num > 0)
+            {
+                GameObject newItemObj = allItemPool[item.gameObject.name].Get();
+                HandleNewItem(newItemObj);
+            }
         }
     }
     #region Old
@@ -213,12 +216,12 @@ public class ItemController : MonoBehaviour
 #endif
         item.enabled = false;
     }
-
     private void HandleMoveItem(MoveItem mItem)
     {
         mItem.enabled = true;
         var mRigidbody = mItem.gameObject.AddComponent<Rigidbody2D>();
         mRigidbody.freezeRotation = true;
-        mRigidbody.gravityScale = 1f;
+        mRigidbody.gravityScale = 5f;
+        mItem.Init();
     }
 }

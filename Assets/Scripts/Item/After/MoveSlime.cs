@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MoveSlime : MoveItem, ICanFindThings 
+public class MoveSlime : MoveItem, IHaveTrampleEffect
 {
     #region MoveState
     private class MoveState : BaseMoveState
@@ -55,16 +55,10 @@ public class MoveSlime : MoveItem, ICanFindThings
         }
     }
     private MoveState moveState;
-    private void ChangeState(int state)
+    public void ChangeState(int state)
     {
         moveState.ChangeState(state);
     }
-    #endregion
-    #region Var
-    [SerializeField]
-    [Range(0, 100)]
-    [Tooltip("史莱姆移动的意愿")]
-    private int moveWill;
     #endregion
     protected override void Start()
     {
@@ -73,20 +67,40 @@ public class MoveSlime : MoveItem, ICanFindThings
 
         StartMove();
     }
+    #region Move
     protected override IEnumerator MovingImpl()
     {
         GameObject target = null;
+        float time = 0f;
         while (true)
         {
-            if (moveState.currState == MoveState.Idle || moveState.currState == MoveState.Move)
+            if(time <= 0.8f)
             {
-                target = FindAnythingOnDirection(Vector2.down, 2f);
+                time += Time.deltaTime;
+            }
+            else
+            {
+                time = 0f;
+                #region WhetherOnAir
+                target = FindAnythingOnDirection(Vector2.down, 0.7f);
                 if (target == null)
                 {
                     ChangeState(MoveState.Fall);
                 }
-                else
+                #endregion
+                #region WhetherBeenTrampled
+                if (moveState.currState != MoveState.Fall)
                 {
+                    target = FindAnythingOnDirection(Vector2.up, 1.1f);
+                    if (target != null)
+                    {
+                        ChangeState(MoveState.BeenTrampled);
+                    }
+                }
+                #endregion
+                if (moveState.currState == MoveState.Idle || moveState.currState == MoveState.Move)
+                {
+
                     target = Find<Player>();
                     if (target != null)
                     {
@@ -106,7 +120,7 @@ public class MoveSlime : MoveItem, ICanFindThings
                     {
                         if (UnityEngine.Random.Range(0, 100) <= moveWill)
                         {
-                            Move(direction);
+                            Move();
                             ChangeState(MoveState.Move);
                             yield return null;
                         }
@@ -117,31 +131,21 @@ public class MoveSlime : MoveItem, ICanFindThings
                         }
                     }
                 }
-            }
-            if (moveState.currState == MoveState.FindPlayer)
-            {
-                Move(target.transform.position - transform.position);
-                if (Find<Player>() == null)
+                if (moveState.currState == MoveState.FindPlayer)
                 {
-                    ChangeState(MoveState.LosePlayer);
+                    MoveNChangeDirection(target.transform.position - transform.position);
+                    if (Find<Player>() == null)
+                    {
+                        ChangeState(MoveState.LosePlayer);
                 }
                 yield return null;
             }
             if (moveState.currState == MoveState.FindMetal)
             {
-                Move(target.transform.position - transform.position);
+                MoveNChangeDirection(target.transform.position - transform.position);
                 if (Find<IMadeByMetal>() == null)
                 {
                     ChangeState(MoveState.LoseMetal);
-                }
-                yield return null;
-            }
-            if (moveState.currState == MoveState.Fall)
-            {
-                target = FindAnythingOnDirection(Vector2.down, 1.5f);
-                if(target != null)
-                {
-                    ChangeState(MoveState.Idle);
                 }
                 yield return null;
             }
@@ -157,6 +161,25 @@ public class MoveSlime : MoveItem, ICanFindThings
                 ChangeState(MoveState.Idle);
                 yield return null;
             }
+            if (moveState.currState == MoveState.Fall)
+            {
+                target = FindAnythingOnDirection(Vector2.down, 0.6f);
+                if(target != null)
+                {
+                    ChangeState(MoveState.Idle);
+                }
+                yield return null;
+            }
+            if (moveState.currState == MoveState.BeenTrampled)
+            {
+                target = FindAnythingOnDirection(Vector2.up, 1f);
+                if(target == null)
+                {
+                    ChangeState(MoveState.Idle);
+                }
+            }
+            
+            }
             yield return null;
         }
     }
@@ -166,32 +189,7 @@ public class MoveSlime : MoveItem, ICanFindThings
     private void LosePlayer()
     {
     }
-    public GameObject Find<T>()
-    {
-        boxcollider2D.enabled = false;
-        GameObject res = null;
-        //查找相关内容
-        RaycastHit2D hit;
-        Vector2 start = transform.position;
-        for(int i = 0; i <= sightRange / 2; i += 10)
-        {
-            float f = (float)i / 180;
-            Vector2 dir = new Vector2(direction.x, direction.y + f);
-            hit = Physics2D.Raycast(start, dir, sightDistance);
-            if(hit.collider == null)
-            {
-                hit = Physics2D.Raycast(start, dir, sightDistance);
-            }
-            if (hit.collider != null && hit.collider.gameObject.GetComponent<T>() != null)
-            {
-                res = hit.collider.gameObject;
-                boxcollider2D.enabled = true;
-                return res;
-            }
-        }
-        boxcollider2D.enabled = true;
-        return res;
-    }
+    #endregion
     public void OnPlayerHit(Player player)
     {
         var playerCollider = player.gameObject.GetComponent<BoxCollider2D>();
@@ -200,5 +198,10 @@ public class MoveSlime : MoveItem, ICanFindThings
     protected override void OnCollisionEnter2D(Collision2D collision)
     {
         base.OnCollisionEnter2D(collision);
+    }
+    public void OnBeenTrampled(MoveObject moveObj)
+    {
+        moveObj.StopMove(3f);
+        moveObj.ForceMove(new Vector2(2, 1), 10);
     }
 }

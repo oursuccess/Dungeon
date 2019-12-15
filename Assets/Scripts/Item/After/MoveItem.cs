@@ -38,11 +38,13 @@ public abstract class MoveItem : MoveObject
     protected int sightRange;
     protected CircleCollider2D sightCollider;
     public Vector2 direction;
+    [SerializeField]
+    [Range(0, 100)]
+    [Tooltip("移动的意愿")]
+    protected int moveWill;
     #endregion
     protected override void Start()
     {
-        boxcollider2D = gameObject.GetComponent<BoxCollider2D>();
-
         base.Start();
     }
     protected virtual void OnEnable()
@@ -61,4 +63,35 @@ public abstract class MoveItem : MoveObject
         StartCoroutine(MovingImpl());
     }
     protected abstract IEnumerator MovingImpl();
+    protected virtual GameObject Find<T>()
+    {
+        boxcollider2D.enabled = false;
+        GameObject res = null;
+        //查找相关内容
+        RaycastHit2D hit;
+        Vector2 start = transform.position;
+        for(int i = 0; i <= sightRange / 2; i += 10)
+        {
+            float f = (float)i / 180;
+            Vector2 dir = new Vector2(direction.x, direction.y + f);
+            hit = Physics2D.Raycast(start, dir, sightDistance);
+            if(hit.collider == null)
+            {
+                hit = Physics2D.Raycast(start, dir, sightDistance);
+            }
+            if (hit.collider != null && hit.collider.gameObject.GetComponent<T>() != null)
+            {
+                res = hit.collider.gameObject;
+                boxcollider2D.enabled = true;
+                return res;
+            }
+        }
+        boxcollider2D.enabled = true;
+        return res;
+    }
+    public override void Init() 
+    {
+        moveDir = direction;
+        base.Init();
+    }
 }

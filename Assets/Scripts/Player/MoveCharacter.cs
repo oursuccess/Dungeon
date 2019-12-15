@@ -16,6 +16,21 @@ public abstract class MoveCharacter : MoveObject
     #region AnimatorVar
     protected Animator animator;
     #endregion
+    #region MoveState
+    public enum MoveState
+    {
+        Idle,
+        Move,
+        Run,
+        Jump,
+        Crawl,
+        Fall,
+        FindThing,
+        Attack,
+    }
+    protected MoveState prevState;
+    protected MoveState moveState;
+    #endregion
     #endregion
     protected override void Start()
     {
@@ -35,11 +50,11 @@ public abstract class MoveCharacter : MoveObject
     }
     #endregion
     #region MoveInterface
-    public override void StopMove()
+    public override void StopMove(float stopTime = 0)
     {
         StopMoveAnimation();
 
-        base.StopMove();
+        base.StopMove(stopTime);
     }
     protected virtual void StopMoveAnimation()
     {
@@ -69,6 +84,14 @@ public abstract class MoveCharacter : MoveObject
             return true;
         }
         return false;
+    }
+    protected abstract bool OnHitArea(Collision2D collision);
+    #endregion
+    #region State
+    protected virtual void ChangeState(MoveState newState)
+    {
+        prevState = moveState;
+        moveState = newState;
     }
     #endregion
 }

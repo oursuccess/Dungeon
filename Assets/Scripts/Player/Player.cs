@@ -15,6 +15,7 @@ public class Player : MoveCharacter
     protected override void Start()
     {
         base.Start();
+        moveState = MoveState.Idle;
 
         if(emote != null)
         {
@@ -28,13 +29,14 @@ public class Player : MoveCharacter
         animator.enabled = false;
         moveDir = Vector2.right;
 
+        StartMove();
     }
     protected override void SimpleAutoMove(Vector2 direction)
     {
         base.SimpleAutoMove(direction);
     }
     #region MoveInterface
-    public override void StopMove()
+    public override void StopMove(float stopTime = 0)
     {
         canMove = false;
         base.StopMove();
@@ -42,7 +44,7 @@ public class Player : MoveCharacter
     public override void StartMove()
     {
         canMove = true;
-        rigidBody2D.gravityScale = 1;
+        StartCoroutine(MoveImpl());
     }
     #endregion
     #region GameOver
@@ -73,18 +75,25 @@ public class Player : MoveCharacter
     #region HandleHit(Hit,Ground)
     protected override void OnCollisionEnter2D(Collision2D collision)
     {
-        IHandlePlayerHit hit = collision.gameObject.GetComponent<IHandlePlayerHit>();
-        if (hit != null)
+        if (OnHitArea(collision))
         {
-            hit.OnPlayerHit(this);
+            IHandlePlayerHit hit = collision.gameObject.GetComponent<IHandlePlayerHit>();
+            if (hit != null)
+            {
+                hit.OnPlayerHit(this);
+            }
         }
-        else if (canMove && collision.transform.name.Contains("Ground"))
-        {
-            animator.enabled = true;
-            SimpleAutoMove(moveDir);
-        }
-
         base.OnCollisionEnter2D(collision);
+    }
+    protected override bool OnHitArea(Collision2D collision)
+    {
+        bool res = false;
+        //这样要求所有角色的位置放在下方而非中心；或者所有角色的大小相近（不超过2）
+        if (Mathf.Abs(collision.transform.position.y - transform.position.y) <= 1f)
+        {
+            res = true;
+        }
+        return res;
     }
     #endregion
     #region CallEnemy(Hit,Saw)
@@ -126,6 +135,85 @@ public class Player : MoveCharacter
                 hit.OnPlayerSought(this);
             }
         }
+    }
+    #endregion
+    #region Move
+    private IEnumerator MoveImpl()
+    {
+        GameObject target = null;
+        while (canMove)
+        {
+            switch (moveState)
+            {
+                case MoveState.Idle:
+                case MoveState.Move:
+                case MoveState.Run:
+                    {
+                        target = FindAnythingOnDirection(Vector2.down, 1f);
+                        if (target == null)
+                        {
+                            ChangeState(MoveState.Fall);
+                        }
+                        else
+                        {
+                            Move();
+                            target = FindAnythingOnDirection(moveDir, 1f);
+                            IHandlePlayerSought playerSought = target.GetComponent<IHandlePlayerSought>();
+                            if(playerSought != null)
+                            {
+                                playerSought.OnPlayerSought(this);
+                            }
+                        }
+                    }
+                    break;
+                case MoveState.Jump:
+                    {
+                        target = FindAnythingOnDirection(Vector2.down, 1);
+                        if(target == null)
+                        {
+                            ChangeState(MoveState.Fall);
+                        }
+                    }
+                    break;
+                case MoveState.Fall:
+                    {
+                        target = FindAnythingOnDirection(Vector2.down, 3);
+                        if(target != null)
+                        {
+                            IHaveTrampleEffect ihte = target.GetComponent<IHaveTrampleEffect>();
+                            if(ihte != null)
+                            {
+                                Move(new Vector2(target.transform.position.x , 0));
+                            }
+                        }
+                        //wait for hit collider
+                    }
+                    break;
+                case MoveState.Crawl:
+                    {
+
+                    }
+                    break;
+                case MoveState.FindThing:
+                    {
+                        Move();
+                        target = FindAnythingOnDirection(moveDir, 1f);
+                        IHandlePlayerSought playerSought = target.GetComponent<IHandlePlayerSought>();
+                        if (playerSought == null)
+                        {
+                            ChangeState(MoveState.Idle);
+                        }
+                    }
+                    break;
+                case MoveState.Attack:
+                    {
+                        ChangeState(MoveState.Idle);
+                    }
+                    break;
+            }
+            yield return null;
+        }
+        yield return null;
     }
     #endregion
 }

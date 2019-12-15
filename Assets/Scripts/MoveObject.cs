@@ -15,7 +15,7 @@ public abstract class MoveObject : MonoBehaviour
     protected float velocity = 1;
     public bool canMove;
 
-    protected Vector2 moveDir;
+    public Vector2 moveDir {get; protected set;}
 
     protected float lastMoveTime;
 
@@ -37,22 +37,39 @@ public abstract class MoveObject : MonoBehaviour
     protected virtual void Start()
     {
         lastMoveTime = 0;
-        moveDir = Vector2.zero;
         inverseMoveTime = 1 / moveTime;
         rigidBody2D = GetComponent<Rigidbody2D>();
+        boxcollider2D = GetComponent<BoxCollider2D>();
+    }
+    public virtual void Init()
+    {
+        if(rigidBody2D == null)
+        {
+            rigidBody2D = GetComponent<Rigidbody2D>();
+        }
+        if(boxcollider2D == null)
+        {
+            boxcollider2D = GetComponent<BoxCollider2D>();
+        }
     }
     #region AutoMove
     protected virtual void SimpleAutoMove(Vector2 direction)
     {
-        if(moveRoutine != null)
+        if (canMove)
         {
-            StopCoroutine(moveRoutine);
+            if (moveRoutine != null)
+            {
+                StopCoroutine(moveRoutine);
+            }
+            if(moveDir != direction)
+            {
+                moveDir = direction;
+                moveDir.Normalize();
+            }
+            StartCoroutine(AutoMoveTo());
         }
-        moveDir = direction;
-        moveDir.Normalize();
-        StartCoroutine(AutoMoveTo(direction));
     }
-    private IEnumerator AutoMoveTo(Vector2 direction)
+    private IEnumerator AutoMoveTo()
     {
         while (canMove)
         {
@@ -66,29 +83,77 @@ public abstract class MoveObject : MonoBehaviour
     {
         canMove = true;
     }
-    public virtual void StopMove()
+    public virtual void StopMove(float stopTime = 0)
     {
-        if(moveRoutine != null)
+        if (moveRoutine != null)
         {
             StopCoroutine(moveRoutine);
             canMove = false;
         }
+        if(stopTime > float.Epsilon)
+        {
+            Invoke("StartMove", stopTime);
+        }
     }
     #endregion
     #region Move
-    protected virtual void Move(Vector2 direction)
+    protected virtual void MoveNChangeDirection(Vector2 direction)
     {
-        moveDir = direction;
-        moveDir.Normalize();
-        Move();
+        if (canMove)
+        {
+            moveDir = direction;
+            moveDir.Normalize();
+            Move();
+        }
     }
-    protected virtual void Move()
+    public virtual void Move()
+    {
+        if (canMove)
+        {
+            if (moveRoutine != null)
+            {
+                StopCoroutine(moveRoutine);
+            }
+            moveRoutine = StartCoroutine(SmoothMovement(moveDir));
+        }
+   }
+    public virtual void Move(Vector2 direction)
+    {
+        if (canMove)
+        {
+            if (moveRoutine != null)
+            {
+                StopCoroutine(moveRoutine);
+            }
+            moveRoutine = StartCoroutine(SmoothMovement(direction));
+
+        }
+    }
+    public virtual void ForceMove(Vector2 direction, float velocity)
     {
         if(moveRoutine != null)
         {
             StopCoroutine(moveRoutine);
         }
-        moveRoutine = StartCoroutine(SmoothMovement(moveDir));
+        StartCoroutine(ForceMovement(direction, velocity));
+    }
+    private IEnumerator ForceMovement(Vector2 direction, float velocity)
+    {
+        Vector2 start = transform.position;
+        Vector2 end = start + direction;
+        float distanceNow = direction.sqrMagnitude;
+
+        while(distanceNow >= float.Epsilon)
+        {
+            Vector2 target = Vector2.MoveTowards(start, end, inverseMoveTime * Time.deltaTime * velocity);
+            rigidBody2D.MovePosition(target);
+            start = transform.position;
+            distanceNow = (end - start).sqrMagnitude;
+
+            yield return null;
+        }
+        yield return true;
+
     }
     private IEnumerator SmoothMovement(Vector2 direction)
     {
@@ -111,11 +176,15 @@ public abstract class MoveObject : MonoBehaviour
     #endregion
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
-        //if (collision.transform.name.Contains("Ground"))
-        //{
-        //    rigidBody2D.MovePosition(new Vector2(transform.position.x, transform.position.y + 0.01f));
-        //}
-    }
+        if (IsBelowThanMe(collision.gameObject))
+        {
+            IHaveTrampleEffect trampleObj = collision.gameObject.GetComponent<IHaveTrampleEffect>();
+            if(trampleObj != null)
+            {
+                trampleObj.OnBeenTrampled(this);
+            }
+        }
+}
     protected virtual bool FindThingOnDirection(LayerMask layer, Vector2 direction, float distance, out RaycastHit2D hit)
     {
         Vector2 start = transform.position;
@@ -131,6 +200,14 @@ public abstract class MoveObject : MonoBehaviour
         {
             return false;
         }
+    }
+    private bool IsBelowThanMe(GameObject gameObject)
+    {
+        if (gameObject.transform.position.y < transform.position.y && Mathf.Abs(gameObject.transform.position.x - transform.position.x) <= 1.5)
+        {
+            return true;
+        }
+        return false;
     }
     protected virtual GameObject FindAnythingOnDirection(Vector2 direction, float distance)
     {
