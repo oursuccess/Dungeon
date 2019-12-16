@@ -32,6 +32,8 @@ public abstract class MoveObject : MonoBehaviour
     #region event
     public delegate void MovingDel(MoveObject moveObject);
     public event MovingDel Moving;
+    public delegate void DieDel(MoveObject moveObject);
+    public event DieDel OnDead;
     #endregion
     #region Layer
     LayerMask layer;
@@ -218,6 +220,16 @@ public abstract class MoveObject : MonoBehaviour
         }
         return false;
     }
+    protected virtual bool OnHitArea(Collision2D collision)
+    {
+        bool res = false;
+        //这样要求所有角色的位置放在下方而非中心；或者所有角色的大小相近（不超过2）
+        if (Mathf.Abs(collision.transform.position.y - transform.position.y) <= 1f)
+        {
+            res = true;
+        }
+        return res;
+    }
     protected virtual GameObject FindAnythingOnDirection(Vector2 direction, float distance)
     {
         GameObject res = null;
@@ -229,6 +241,12 @@ public abstract class MoveObject : MonoBehaviour
             res = hit.collider.gameObject;
         }
         return res;
+    }
+    #endregion
+    #region Die
+    protected virtual void Dead()
+    {
+        OnDead?.Invoke(this);
     }
     #endregion
 }

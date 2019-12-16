@@ -137,8 +137,8 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
                     if (Find<Player>() == null)
                     {
                         ChangeState(MoveState.LosePlayer);
-                }
-                yield return null;
+                    }
+                    yield return null;
                 }
                 if (moveState.currState == MoveState.FindMetal)
                 {
@@ -186,12 +186,26 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
             yield return null;
         }
     }
+    #region MoveComp
+    public override void ChangeState(int state)
+    {
+        moveState.ChangeState(state);
+        if(state == MoveState.Die)
+        {
+            Dead();
+        }
+    }
+    private void ConsumeMetal(IMadeByMetal metal)
+    {
+
+    }
     private void LoseMetal()
     {
     }
     private void LosePlayer()
     {
     }
+    #endregion
     #endregion
     public void OnPlayerHit(Player player)
     {
@@ -200,6 +214,15 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
     }
     protected override void OnCollisionEnter2D(Collision2D collision)
     {
+        if (OnHitArea(collision))
+        {
+            var obj = collision.gameObject;
+            IMadeByMetal metal = obj.GetComponent<IMadeByMetal>();
+            if (metal != null)
+            {
+                ConsumeMetal(metal);
+            }
+        }
         base.OnCollisionEnter2D(collision);
     }
     public void OnBeenTrampled(MoveObject moveObj)

@@ -65,11 +65,12 @@ public abstract class MoveCharacter : MoveObject
         animator.SetFloat("Horizontal", 0f);
         animator.SetFloat("Vertical", 0f);
     }
-    public virtual void Dead()
+    protected override void Dead()
     {
         StopMove();
 
         animator.SetBool("Dead", true);
+        base.Dead();
     }
     #endregion
     #region Find(Layer)
@@ -88,7 +89,6 @@ public abstract class MoveCharacter : MoveObject
         }
         return false;
     }
-    protected abstract bool OnHitArea(Collision2D collision);
     #endregion
     #region State(Add Animator)
     public virtual void ChangeState(MoveState newState)

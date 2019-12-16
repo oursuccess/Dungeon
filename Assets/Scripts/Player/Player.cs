@@ -31,10 +31,12 @@ public class Player : MoveCharacter
 
         StartMove();
     }
+    #region Old
     protected override void SimpleAutoMove(Vector2 direction)
     {
         base.SimpleAutoMove(direction);
     }
+    #endregion
     #region MoveInterface
     public override void StopMove(float stopTime = 0)
     {
@@ -48,7 +50,7 @@ public class Player : MoveCharacter
     }
     #endregion
     #region GameOver
-    public override void Dead()
+    protected override void Dead()
     {
         emote.SetActive(false);
         base.Dead();
@@ -87,13 +89,7 @@ public class Player : MoveCharacter
     }
     protected override bool OnHitArea(Collision2D collision)
     {
-        bool res = false;
-        //这样要求所有角色的位置放在下方而非中心；或者所有角色的大小相近（不超过2）
-        if (Mathf.Abs(collision.transform.position.y - transform.position.y) <= 1f)
-        {
-            res = true;
-        }
-        return res;
+        return base.OnHitArea(collision);
     }
     #endregion
     #region CallEnemy(Hit,Saw)

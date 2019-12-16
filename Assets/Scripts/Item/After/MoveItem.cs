@@ -32,6 +32,10 @@ public abstract class MoveItem : MoveObject
     public virtual void ChangeState(int state)
     {
         moveState.ChangeState(state);
+        if(state == BaseMoveState.Die)
+        {
+            Dead();
+        }
     }
     protected BaseMoveState moveState;
     #endregion
@@ -108,9 +112,10 @@ public abstract class MoveItem : MoveObject
         moveDir = direction;
         base.Init();
     }
-    protected virtual void Dead()
+    protected override void Dead()
     {
         Invoke("AfterDead", 3f);
+        base.Dead();
     }
     protected virtual void AfterDead()
     {

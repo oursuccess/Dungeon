@@ -5,11 +5,9 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public int Stage { get; private set; }
-
+    #region Singleton
     private GameManager() { }
     public static GameManager Instance;
-
     void Start()
     {
         if(Instance == null)
@@ -20,12 +18,30 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
-
         DontDestroyOnLoad(gameObject);
-
-        Stage = 1;
+        Init();
     }
-
+    #endregion
+    private void Init()
+    {
+        InitState();
+    }
+    #region PlayerDied
+    public GameObject player { get; private set; }
+    public Vector2 RespawnPosition { get; private set; }
+    public void Restart()
+    {
+        Destroy(player);
+    }
+    private void InitPlayer()
+    {
+        player = GameObject.Find("Player");
+        RespawnPosition = player.transform.position;
+    }
+    private void UpdateRespawnPosition(Vector2 newPos)
+    {
+        RespawnPosition = newPos;
+    }
     public void GameOver()
     {
         ShowDieMessage();
@@ -34,10 +50,23 @@ public class GameManager : MonoBehaviour
     {
         CrossCanvasController.Instance.DieText.SetActive(true);
     }
-
+    #endregion
+    #region Stage
+    public int Stage { get; private set; }
+    private void InitState()
+    {
+        Stage = 1;
+    }
     public void ToNextStage()
     {
+        SceneManager.sceneLoaded += OnStageLoaded;
         Stage++;
         SceneManager.LoadScene("Level" + Stage.ToString().PadLeft(2, '0'));
     }
+    private void OnStageLoaded(Scene scene, LoadSceneMode mode)
+    {
+        InitPlayer();
+        SceneManager.sceneLoaded -= OnStageLoaded;
+    }
+    #endregion
 }
