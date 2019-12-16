@@ -143,47 +143,54 @@ public class Player : MoveCharacter
         GameObject target = null;
         while (canMove)
         {
-            switch (moveState)
+            if(lastMoveTime <= moveTime) 
             {
-                case MoveState.Idle:
-                case MoveState.Move:
-                case MoveState.Run:
-                    {
-                        target = FindAnythingOnDirection(Vector2.down, 1f);
-                        if (target == null)
+                lastMoveTime += Time.deltaTime;
+            }
+            else
+            {
+                lastMoveTime = 0f;
+                switch (moveState)
+                {
+                    case MoveState.Idle:
+                    case MoveState.Move:
+                    case MoveState.Run:
                         {
-                            ChangeState(MoveState.Fall);
-                        }
-                        else
-                        {
-                            Move();
-                            target = FindAnythingOnDirection(moveDir, 1f);
-                            IHandlePlayerSought playerSought = target.GetComponent<IHandlePlayerSought>();
-                            if(playerSought != null)
+                            target = FindAnythingOnDirection(Vector2.down, 1f);
+                            if (target == null)
                             {
-                                playerSought.OnPlayerSought(this);
+                                ChangeState(MoveState.Fall);
+                            }
+                            else
+                            {
+                                Move();
+                                target = FindAnythingOnDirection(moveDir, 1f);
+                                IHandlePlayerSought playerSought = target.GetComponent<IHandlePlayerSought>();
+                                if (playerSought != null)
+                                {
+                                    playerSought.OnPlayerSought(this);
+                                }
                             }
                         }
-                    }
-                    break;
-                case MoveState.Jump:
-                    {
-                        target = FindAnythingOnDirection(Vector2.down, 1);
-                        if(target == null)
+                        break;
+                    case MoveState.Jump:
                         {
-                            ChangeState(MoveState.Fall);
-                        }
-                    }
-                    break;
-                case MoveState.Fall:
-                    {
-                        target = FindAnythingOnDirection(Vector2.down, 3);
-                        if(target != null)
-                        {
-                            IHaveTrampleEffect ihte = target.GetComponent<IHaveTrampleEffect>();
-                            if(ihte != null)
+                            target = FindAnythingOnDirection(Vector2.down, 1);
+                            if (target == null)
                             {
-                                Move(new Vector2(target.transform.position.x , 0));
+                                ChangeState(MoveState.Fall);
+                            }
+                        }
+                        break;
+                    case MoveState.Fall:
+                        {
+                            target = FindAnythingOnDirection(Vector2.down, 3);
+                            if (target != null)
+                            {
+                                IHaveTrampleEffect ihte = target.GetComponent<IHaveTrampleEffect>();
+                                if (ihte != null)
+                                {
+                                    Move(new Vector2(target.transform.position.x , 0));
                             }
                         }
                         //wait for hit collider
@@ -210,6 +217,7 @@ public class Player : MoveCharacter
                         ChangeState(MoveState.Idle);
                     }
                     break;
+            }
             }
             yield return null;
         }

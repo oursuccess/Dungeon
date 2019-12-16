@@ -19,7 +19,6 @@ public abstract class MoveObject : MonoBehaviour
 
     protected float lastMoveTime;
 
-    protected float inverseMoveTime;
     protected Coroutine moveRoutine;
     #endregion
     #region object
@@ -37,12 +36,13 @@ public abstract class MoveObject : MonoBehaviour
     protected virtual void Start()
     {
         lastMoveTime = 0;
-        inverseMoveTime = 1 / moveTime;
         rigidBody2D = GetComponent<Rigidbody2D>();
         boxcollider2D = GetComponent<BoxCollider2D>();
     }
     public virtual void Init()
     {
+        canMove = true;
+        lastMoveTime = 0;
         if(rigidBody2D == null)
         {
             rigidBody2D = GetComponent<Rigidbody2D>();
@@ -143,35 +143,35 @@ public abstract class MoveObject : MonoBehaviour
         Vector2 end = start + direction;
         float distanceNow = direction.sqrMagnitude;
 
-        while(distanceNow >= float.Epsilon)
+        while(distanceNow >= 0.05f)
         {
-            Vector2 target = Vector2.MoveTowards(start, end, inverseMoveTime * Time.deltaTime * velocity);
+            Vector2 target = Vector2.Lerp(start, end, lastMoveTime * velocity / moveTime);
             rigidBody2D.MovePosition(target);
             start = transform.position;
             distanceNow = (end - start).sqrMagnitude;
+            lastMoveTime += Time.deltaTime;
 
             yield return null;
         }
-        yield return true;
-
     }
     private IEnumerator SmoothMovement(Vector2 direction)
     {
         Vector2 start = transform.position;
         Vector2 end = start + direction;
         float distanceNow = direction.sqrMagnitude;
+        Debug.Log(this);
 
-        while(distanceNow >= float.Epsilon)
+        while(distanceNow >= 0.05f)
         {
-            Vector2 target = Vector2.MoveTowards(start, end, inverseMoveTime * Time.deltaTime * velocity);
+            Vector2 target = Vector2.Lerp(start, end, lastMoveTime * velocity / moveTime);
             rigidBody2D.MovePosition(target);
             start = transform.position;
             distanceNow = (end - start).sqrMagnitude;
+            lastMoveTime += Time.deltaTime;
 
             Moving?.Invoke(this);
             yield return null;
         }
-        yield return true;
     }
     #endregion
     protected virtual void OnCollisionEnter2D(Collision2D collision)

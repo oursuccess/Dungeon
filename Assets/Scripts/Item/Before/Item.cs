@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -122,6 +123,14 @@ public abstract class Item : MonoBehaviour
     {
         OnDirectionSetComplete?.Invoke(this);
         setDirection.OnDirectionCompleted -= OnDirectionSelectComplete;
+    }
+
+    public virtual void Clean()
+    {
+        StopAllCoroutines();
+        setDirection.Clean();
+        Destroy(this);
+        enabled = false;
     }
     #endregion
 }

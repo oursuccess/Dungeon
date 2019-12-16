@@ -214,7 +214,7 @@ public class ItemController : MonoBehaviour
 #if UNITY_EDITOR
         }
 #endif
-        item.enabled = false;
+        item.Clean();
     }
     private void HandleMoveItem(MoveItem mItem)
     {
@@ -223,5 +223,6 @@ public class ItemController : MonoBehaviour
         mRigidbody.freezeRotation = true;
         mRigidbody.gravityScale = 5f;
         mItem.Init();
+        mItem.StartMove();
     }
 }

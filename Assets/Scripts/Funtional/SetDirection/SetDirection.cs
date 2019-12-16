@@ -106,6 +106,12 @@ public class SetDirection : MonoBehaviour
             yield return null;
         }
     }
+
+    public void Clean()
+    {
+        Destroy(this);
+    }
+
     protected virtual void Completation()
     {
         StopCoroutine(textSplashRoutine);

@@ -64,23 +64,28 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
     {
         moveState = new MoveState();
         base.Start();
-
-        StartMove();
     }
     #region Move
+    public override void StartMove()
+    {
+        base.StartMove();
+    }
+    public override void StopMove(float stopTime = 0)
+    {
+        base.StopMove(stopTime);
+    }
     protected override IEnumerator MovingImpl()
     {
         GameObject target = null;
-        float time = 0f;
         while (true)
         {
-            if(time <= 0.8f)
+            if(lastMoveTime <= moveTime)
             {
-                time += Time.deltaTime;
+                lastMoveTime += Time.deltaTime;
             }
             else
             {
-                time = 0f;
+                lastMoveTime = 0f;
                 #region WhetherOnAir
                 target = FindAnythingOnDirection(Vector2.down, 0.7f);
                 if (target == null)
@@ -139,46 +144,49 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
                         ChangeState(MoveState.LosePlayer);
                 }
                 yield return null;
-            }
-            if (moveState.currState == MoveState.FindMetal)
-            {
-                MoveNChangeDirection(target.transform.position - transform.position);
-                if (Find<IMadeByMetal>() == null)
-                {
-                    ChangeState(MoveState.LoseMetal);
                 }
-                yield return null;
-            }
-            if (moveState.currState == MoveState.LoseMetal)
-            {
-                LoseMetal();
-                ChangeState(MoveState.Idle);
-                yield return null;
-            }
-            if (moveState.currState == MoveState.LosePlayer)
-            {
-                LosePlayer();
-                ChangeState(MoveState.Idle);
-                yield return null;
-            }
-            if (moveState.currState == MoveState.Fall)
-            {
-                target = FindAnythingOnDirection(Vector2.down, 0.6f);
-                if(target != null)
+                if (moveState.currState == MoveState.FindMetal)
                 {
+                    MoveNChangeDirection(target.transform.position - transform.position);
+                    if (Find<IMadeByMetal>() == null)
+                    {
+                        ChangeState(MoveState.LoseMetal);
+                    }
+                    yield return null;
+                }
+                if (moveState.currState == MoveState.LoseMetal)
+                {
+                    LoseMetal();
                     ChangeState(MoveState.Idle);
+                    yield return null;
                 }
-                yield return null;
-            }
-            if (moveState.currState == MoveState.BeenTrampled)
-            {
-                target = FindAnythingOnDirection(Vector2.up, 1f);
-                if(target == null)
+                if (moveState.currState == MoveState.LosePlayer)
                 {
+                    LosePlayer();
                     ChangeState(MoveState.Idle);
+                    yield return null;
                 }
-            }
-            
+                if (moveState.currState == MoveState.Fall)
+                {
+                    target = FindAnythingOnDirection(Vector2.down, 0.6f);
+                    if (target != null)
+                    {
+                        ChangeState(MoveState.Idle);
+                    }
+                    else
+                    {
+                        Move(new Vector2(moveDir.x, -1));
+                    }
+                    yield return null;
+                }
+                if (moveState.currState == MoveState.BeenTrampled)
+                {
+                    target = FindAnythingOnDirection(Vector2.up, 1f);
+                    if (target == null)
+                    {
+                        ChangeState(MoveState.Idle);
+                    }
+                }
             }
             yield return null;
         }
@@ -201,7 +209,6 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
     }
     public void OnBeenTrampled(MoveObject moveObj)
     {
-        moveObj.StopMove(3f);
-        moveObj.ForceMove(new Vector2(2, 1), 10);
+        moveObj.ForceMove(new Vector2(moveObj.moveDir.x == 0 ? moveObj.moveDir.x : 1, 1), 10);
     }
 }

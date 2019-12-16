@@ -60,7 +60,14 @@ public abstract class MoveItem : MoveObject
     }
     public override void StartMove()
     {
-        StartCoroutine(MovingImpl());
+        if (canMove)
+        {
+            StartCoroutine(MovingImpl());
+        }
+    }
+    public override void StopMove(float stopTime = 0)
+    {
+        base.StopMove(stopTime);
     }
     protected abstract IEnumerator MovingImpl();
     protected virtual GameObject Find<T>()
@@ -91,6 +98,7 @@ public abstract class MoveItem : MoveObject
     }
     public override void Init() 
     {
+        moveWill = 100;
         moveDir = direction;
         base.Init();
     }
