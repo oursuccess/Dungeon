@@ -15,20 +15,12 @@ public class Player : MoveCharacter
     protected override void Start()
     {
         base.Start();
-        moveState = MoveState.Idle;
-
-        if(emote != null)
-        {
-            emote.SetActive(false);
-        }
 
         //to clean
         gameObject.transform.localScale = new Vector2(animSizeXRatio, animSizeYRatio);
 
-        canMove = true;
-        animator.enabled = false;
         moveDir = Vector2.right;
-
+        currState = MoveState.Idle;
         StartMove();
     }
     #region Old
@@ -45,7 +37,6 @@ public class Player : MoveCharacter
     }
     public override void StartMove()
     {
-        canMove = true;
         StartCoroutine(MoveImpl());
     }
     #endregion
@@ -82,54 +73,18 @@ public class Player : MoveCharacter
             IHandlePlayerHit hit = collision.gameObject.GetComponent<IHandlePlayerHit>();
             if (hit != null)
             {
+                ChangeState(MoveState.FindThing);
                 hit.OnPlayerHit(this);
             }
         }
         base.OnCollisionEnter2D(collision);
     }
-    protected override bool OnHitArea(Collision2D collision)
-    {
-        return base.OnHitArea(collision);
-    }
-    #endregion
-    #region CallEnemy(Hit,Saw)
     protected void OnTriggerEnter2D(Collider2D collision)
     {
-
-        if (collision.isTrigger)
+        IHandlePlayerHit hit = collision.gameObject.GetComponent<IHandlePlayerHit>();
+        if (hit != null)
         {
-            ICanSawPlayer sought = collision.gameObject.GetComponent<ICanSawPlayer>();
-            if (sought != null)
-            {
-                sought.ISawPlayer(this);
-            }
-        }
-        else
-        {
-            IHandlePlayerSought hit = collision.gameObject.GetComponent<IHandlePlayerSought>();
-            if (hit != null)
-            {
-                hit.OnPlayerSought(this);
-            }
-        }
-    }
-    protected void OnTriggerExit2D(Collider2D collision)
-    {
-        if (collision.isTrigger)
-        {
-            ICanSawPlayer sought = collision.gameObject.GetComponent<ICanSawPlayer>();
-            if (sought != null)
-            {
-                sought.ILosePlayer(this);
-            }
-        }
-        else
-        {
-            IHandlePlayerSought hit = collision.gameObject.GetComponent<IHandlePlayerSought>();
-            if (hit != null)
-            {
-                hit.OnPlayerSought(this);
-            }
+            hit.OnPlayerHit(this);
         }
     }
     #endregion
@@ -146,9 +101,13 @@ public class Player : MoveCharacter
             else
             {
                 lastMoveTime = 0f;
-                switch (moveState)
+                switch (currState)
                 {
                     case MoveState.Idle:
+                        {
+                            ChangeState(MoveState.Move);
+                        }
+                        break;
                     case MoveState.Move:
                     case MoveState.Run:
                         {
@@ -186,34 +145,40 @@ public class Player : MoveCharacter
                                 IHaveTrampleEffect ihte = target.GetComponent<IHaveTrampleEffect>();
                                 if (ihte != null)
                                 {
-                                    Move(new Vector2(target.transform.position.x , 0));
+                                    ChangeState(MoveState.Idle);
+                                }
+                                else
+                                {
+                                    fallDistance += rigidBody2D.gravityScale * moveTime;
+                                }
+                            }
+                            //wait for hit collider
+                        }
+                        break;
+                    case MoveState.Crawl:
+                        {
+
+                        }
+                        break;
+                    case MoveState.FindThing:
+                        {
+                            Move();
+                            target = FindAnythingOnDirection(moveDir, 1f);
+                            IHandlePlayerSought playerSought = target.GetComponent<IHandlePlayerSought>();
+                            if (playerSought == null)
+                            {
+                                ChangeState(MoveState.Idle);
                             }
                         }
-                        //wait for hit collider
-                    }
-                    break;
-                case MoveState.Crawl:
-                    {
-
-                    }
-                    break;
-                case MoveState.FindThing:
-                    {
-                        Move();
-                        target = FindAnythingOnDirection(moveDir, 1f);
-                        IHandlePlayerSought playerSought = target.GetComponent<IHandlePlayerSought>();
-                        if (playerSought == null)
+                        break;
+                    case MoveState.Attack:
                         {
                             ChangeState(MoveState.Idle);
                         }
-                    }
-                    break;
-                case MoveState.Attack:
-                    {
-                        ChangeState(MoveState.Idle);
-                    }
-                    break;
-            }
+                        break;
+                    default:
+                        break;
+                }
             }
             yield return null;
         }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TrapStab : Trap, IHandlePlayerSought
+public class TrapStab : Trap, IHandlePlayerSought, IMadeByMetal
 {
     protected override void Start()
     {
@@ -12,7 +12,7 @@ public class TrapStab : Trap, IHandlePlayerSought
 
     public override void Effect(Player player)
     {
-        player.Dead();
+        player.ChangeState(MoveCharacter.MoveState.Die);
     }
 
     public override void OnPlayerHit(Player player)
@@ -26,5 +26,10 @@ public class TrapStab : Trap, IHandlePlayerSought
 
     public void OnPlayerNotSeeing(Player player)
     {
+    }
+
+    public void ConsumeMe()
+    {
+        Destroy(GetComponent<BoxCollider2D>());
     }
 }

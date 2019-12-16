@@ -31,14 +31,19 @@ public class GameManager : MonoBehaviour
     public Vector2 RespawnPosition { get; private set; }
     public void Restart()
     {
-        Destroy(player);
+        var oldOne = player;
+        var camManager = Camera.main.GetComponent<CameraController>();
+        camManager.ChangeCameraPosition(RespawnPosition);
+        player = Instantiate(player, RespawnPosition, Quaternion.identity);
+        camManager.ChangeFollow(player);
+        Destroy(oldOne);
     }
     private void InitPlayer()
     {
         player = GameObject.Find("Player");
         RespawnPosition = player.transform.position;
     }
-    private void UpdateRespawnPosition(Vector2 newPos)
+    public void UpdateRespawnPosition(Vector2 newPos)
     {
         RespawnPosition = newPos;
     }

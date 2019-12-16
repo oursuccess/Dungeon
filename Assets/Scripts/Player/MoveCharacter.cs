@@ -29,8 +29,8 @@ public abstract class MoveCharacter : MoveObject
         Attack,
         Die,
     }
-    protected MoveState prevState;
-    protected MoveState moveState;
+    public MoveState prevState { get; protected set; }
+    public MoveState currState { get; protected set; }
     #endregion
     #endregion
     protected override void Start()
@@ -72,6 +72,22 @@ public abstract class MoveCharacter : MoveObject
         animator.SetBool("Dead", true);
         base.Dead();
     }
+    public virtual void MoveWithAnim(Vector2 direction, float velocity)
+    {
+        Move(direction);
+        PlayMoveAnim(direction, velocity);
+    }
+    #endregion
+    #region Animator
+    private void PlayMoveAnim(Vector2 direction, float velocity)
+    {
+        if(direction != Vector2.zero)
+        {
+            animator.SetBool("Running", true);
+            animator.SetFloat("Horizontal", moveDir.x);
+            animator.SetFloat("Vertical", moveDir.y);
+        }
+    }
     #endregion
     #region Find(Layer)
     protected bool Find(Vector2 direction, LayerMask layer, out RaycastHit2D hit)
@@ -93,15 +109,14 @@ public abstract class MoveCharacter : MoveObject
     #region State(Add Animator)
     public virtual void ChangeState(MoveState newState)
     {
-        prevState = moveState;
-        moveState = newState;
-        switch (moveState)
+        if (currState == newState) return;
+        prevState = currState;
+        currState = newState;
+        switch (currState)
         {
             case MoveState.Run:
             case MoveState.Move:
-                animator.SetBool("Running", true);
-                animator.SetFloat("Horizontal", moveDir.x);
-                animator.SetFloat("Vertical", moveDir.y);
+                PlayMoveAnim(moveDir, velocity);
                 break;
             case MoveState.Idle:
                 animator.SetBool("Running", false);
@@ -111,6 +126,8 @@ public abstract class MoveCharacter : MoveObject
                 break;
             case MoveState.Die:
                 Dead();
+                break;
+            case MoveState.FindThing:
                 break;
             default:
                 break;

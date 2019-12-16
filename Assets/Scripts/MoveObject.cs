@@ -24,10 +24,13 @@ public abstract class MoveObject : MonoBehaviour
     #endregion
     protected float lastMoveTime;
     protected Coroutine moveRoutine;
+    #region SupportVar
+    public float fallDistance { get; protected set; }
+    #endregion
     #endregion
     #region object
-    protected Rigidbody2D rigidBody2D;
-    protected BoxCollider2D boxcollider2D;
+    public Rigidbody2D rigidBody2D { get; protected set; }
+    public BoxCollider2D boxcollider2D { get; protected set; }
     #endregion
     #region event
     public delegate void MovingDel(MoveObject moveObject);
@@ -35,21 +38,17 @@ public abstract class MoveObject : MonoBehaviour
     public delegate void DieDel(MoveObject moveObject);
     public event DieDel OnDead;
     #endregion
-    #region Layer
-    LayerMask layer;
-    #endregion
     #endregion
     #region Init
     protected virtual void Start()
     {
-        lastMoveTime = 0;
-        rigidBody2D = GetComponent<Rigidbody2D>();
-        boxcollider2D = GetComponent<BoxCollider2D>();
+        Init();
     }
     public virtual void Init()
     {
         canMove = true;
         lastMoveTime = 0;
+        fallDistance = 0;
         if(rigidBody2D == null)
         {
             rigidBody2D = GetComponent<Rigidbody2D>();
@@ -168,7 +167,6 @@ public abstract class MoveObject : MonoBehaviour
         Vector2 start = transform.position;
         Vector2 end = start + direction;
         float distanceNow = direction.sqrMagnitude;
-        Debug.Log(this);
 
         while(distanceNow >= 0.05f)
         {
@@ -187,6 +185,10 @@ public abstract class MoveObject : MonoBehaviour
     #region CollisionNFind
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
+        if (collision.gameObject.tag.Contains("Ground"))
+        {
+            fallDistance = 0;
+        }
         if (IsBelowThanMe(collision.gameObject))
         {
             IHaveTrampleEffect trampleObj = collision.gameObject.GetComponent<IHaveTrampleEffect>();
@@ -195,7 +197,7 @@ public abstract class MoveObject : MonoBehaviour
                 trampleObj.OnBeenTrampled(this);
             }
         }
-}
+    }
     protected virtual bool FindThingOnDirection(LayerMask layer, Vector2 direction, float distance, out RaycastHit2D hit)
     {
         Vector2 start = transform.position;

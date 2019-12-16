@@ -5,7 +5,7 @@ using UnityEngine;
 public abstract class MoveItem : MoveObject
 {
     #region State
-    protected class BaseMoveState
+    public class BaseMoveState
     {
         #region State
         public int currState;
@@ -37,7 +37,7 @@ public abstract class MoveItem : MoveObject
             Dead();
         }
     }
-    protected BaseMoveState moveState;
+    public BaseMoveState moveState { get; protected set; }
     #endregion
     #region Sight
     [Tooltip("影响对象的视野距离，10为全屏范围")]

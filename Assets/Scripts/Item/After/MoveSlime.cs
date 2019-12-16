@@ -6,13 +6,14 @@ using UnityEngine;
 public class MoveSlime : MoveItem, IHaveTrampleEffect
 {
     #region MoveState
-    private class MoveState : BaseMoveState
+    public class MoveState : BaseMoveState
     {
         public static int FindPlayer { get; private set; } = 0;
         public static int FindMetal { get; private set; } = 1;
         public static int BeenTrampled { get; private set; } = 2;
         public static int LosePlayer { get; private set; } = 3;
         public static int LoseMetal { get; private set; } = 4;
+        public static int Consumed { get; private set; } = 5;
         public static ushort StateNums;
         public static Dictionary<string, int> States;
         public MoveState()
@@ -85,6 +86,7 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
                 target = FindAnythingOnDirection(Vector2.down, 0.7f);
                 if (target == null)
                 {
+                    fallDistance += rigidBody2D.gravityScale * moveTime;
                     ChangeState(MoveState.Fall);
                 }
                 #endregion
@@ -168,10 +170,6 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
                     {
                         ChangeState(MoveState.Idle);
                     }
-                    else
-                    {
-                        Move(new Vector2(moveDir.x, -1));
-                    }
                     yield return null;
                 }
                 if (moveState.currState == MoveState.BeenTrampled)
@@ -181,6 +179,10 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
                     {
                         ChangeState(MoveState.Idle);
                     }
+                }
+                if( moveState.currState == MoveState.Consumed)
+                {
+                    StopMove();
                 }
             }
             yield return null;
@@ -194,13 +196,19 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
         {
             Dead();
         }
+        else if(state == MoveState.Consumed)
+        {
+            //播放吞食动画
+            canMove = false;
+        }
     }
     private void ConsumeMetal(IMadeByMetal metal)
     {
-
+        metal.ConsumeMe();
     }
     private void LoseMetal()
     {
+        //播放动画
     }
     private void LosePlayer()
     {
@@ -227,6 +235,33 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
     }
     public void OnBeenTrampled(MoveObject moveObj)
     {
-        moveObj.ForceMove(new Vector2(moveObj.moveDir.x == 0 ? moveObj.moveDir.x : 1, 1), 10);
+        float x, y = moveObj.fallDistance;
+        if (moveObj is MoveItem item)
+        {
+            if(item.moveState.prevState == MoveItem.BaseMoveState.Idle)
+            {
+                x = 0;
+            }
+            else
+            {
+                x = item.moveDir.x * 2;
+            }
+        }
+        else if (moveObj is MoveCharacter character)
+        {
+            if(character.prevState == MoveCharacter.MoveState.Idle)
+            {
+                x = 0;
+            }
+            else
+            {
+                x = character.moveDir.x * 2;
+            }
+        }
+        else
+        {
+            x = moveObj.moveDir.x * 2;
+        }
+        moveObj.ForceMove(new Vector2(x, y), 10);
     }
-}
+  }
