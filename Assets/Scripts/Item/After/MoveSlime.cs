@@ -54,11 +54,6 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
             }
         }
     }
-    private MoveState moveState;
-    public void ChangeState(int state)
-    {
-        moveState.ChangeState(state);
-    }
     #endregion
     protected override void Start()
     {

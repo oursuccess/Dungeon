@@ -15,6 +15,7 @@ public abstract class MoveItem : MoveObject
         public static int Idle { get; private set; } = 0;
         public static int Move { get; private set; } = 1;
         public static int Fall { get; private set; } = 2;
+        public static int Die { get; private set; } = 3;
         #endregion
         #region PublicInterface
         public virtual void ChangeState(int state)
@@ -28,6 +29,11 @@ public abstract class MoveItem : MoveObject
         public event StateChangedDel StateChanged;
         #endregion
     }
+    public virtual void ChangeState(int state)
+    {
+        moveState.ChangeState(state);
+    }
+    protected BaseMoveState moveState;
     #endregion
     #region Sight
     [Tooltip("影响对象的视野距离，10为全屏范围")]
@@ -98,8 +104,16 @@ public abstract class MoveItem : MoveObject
     }
     public override void Init() 
     {
-        moveWill = 100;
+        moveWill = UnityEngine.Random.Range(0, 100);
         moveDir = direction;
         base.Init();
+    }
+    protected virtual void Dead()
+    {
+        Invoke("AfterDead", 3f);
+    }
+    protected virtual void AfterDead()
+    {
+        Destroy(this);
     }
 }

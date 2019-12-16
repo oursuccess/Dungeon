@@ -7,18 +7,22 @@ public abstract class MoveObject : MonoBehaviour
 {
     #region Var
     #region move
+    #region Editor
     [SerializeField]
+    [Tooltip("移动所需的时间，单位（秒）")]
     protected float moveTime = 1;
     [SerializeField]
+    [Tooltip("单次移动的距离")]
     protected float moveDistance = 1;
     [SerializeField]
+    [Tooltip("移动速度")]
     protected float velocity = 1;
+    [Tooltip("是否可以移动")]
     public bool canMove;
-
-    public Vector2 moveDir {get; protected set;}
-
+    [Tooltip("目前的移动方向")]
+    public Vector2 moveDir;
+    #endregion
     protected float lastMoveTime;
-
     protected Coroutine moveRoutine;
     #endregion
     #region object
@@ -33,6 +37,7 @@ public abstract class MoveObject : MonoBehaviour
     LayerMask layer;
     #endregion
     #endregion
+    #region Init
     protected virtual void Start()
     {
         lastMoveTime = 0;
@@ -52,6 +57,8 @@ public abstract class MoveObject : MonoBehaviour
             boxcollider2D = GetComponent<BoxCollider2D>();
         }
     }
+    #endregion
+    #region Move
     #region AutoMove
     protected virtual void SimpleAutoMove(Vector2 direction)
     {
@@ -174,6 +181,8 @@ public abstract class MoveObject : MonoBehaviour
         }
     }
     #endregion
+    #endregion
+    #region CollisionNFind
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
         if (IsBelowThanMe(collision.gameObject))
@@ -221,4 +230,5 @@ public abstract class MoveObject : MonoBehaviour
         }
         return res;
     }
+    #endregion
 }

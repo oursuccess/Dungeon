@@ -27,6 +27,7 @@ public abstract class MoveCharacter : MoveObject
         Fall,
         FindThing,
         Attack,
+        Die,
     }
     protected MoveState prevState;
     protected MoveState moveState;
@@ -39,6 +40,7 @@ public abstract class MoveCharacter : MoveObject
         
         base.Start();
     }
+    #region Old
     #region AutoMove(Add Animator)
     protected override void SimpleAutoMove(Vector2 direction)
     {
@@ -48,6 +50,7 @@ public abstract class MoveCharacter : MoveObject
 
         base.SimpleAutoMove(direction);
     }
+    #endregion
     #endregion
     #region MoveInterface
     public override void StopMove(float stopTime = 0)
@@ -87,11 +90,31 @@ public abstract class MoveCharacter : MoveObject
     }
     protected abstract bool OnHitArea(Collision2D collision);
     #endregion
-    #region State
-    protected virtual void ChangeState(MoveState newState)
+    #region State(Add Animator)
+    public virtual void ChangeState(MoveState newState)
     {
         prevState = moveState;
         moveState = newState;
+        switch (moveState)
+        {
+            case MoveState.Run:
+            case MoveState.Move:
+                animator.SetBool("Running", true);
+                animator.SetFloat("Horizontal", moveDir.x);
+                animator.SetFloat("Vertical", moveDir.y);
+                break;
+            case MoveState.Idle:
+                animator.SetBool("Running", false);
+                break;
+            case MoveState.Attack:
+                animator.SetTrigger("Attack");
+                break;
+            case MoveState.Die:
+                Dead();
+                break;
+            default:
+                break;
+        }
     }
     #endregion
 }
