@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 public class SceneSelector : MonoBehaviour
 {
@@ -10,6 +9,6 @@ public class SceneSelector : MonoBehaviour
     public void OnScenePressed()
     {
         level = "Level" + GetComponentInChildren<Text>().text;
-        SceneManager.LoadScene(level);
+        GameManager.Instance.ToLevel(level);
     }
 }

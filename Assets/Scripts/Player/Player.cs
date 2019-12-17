@@ -5,9 +5,6 @@ using UnityEngine.UI;
 
 public class Player : MoveCharacter
 {
-    #region Emote
-    public GameObject emote;
-    #endregion
     #region Temp
     private float animSizeXRatio = 0.1f;
     private float animSizeYRatio = 0.1f;
@@ -43,7 +40,6 @@ public class Player : MoveCharacter
     #region GameOver
     protected override void Dead()
     {
-        emote.SetActive(false);
         base.Dead();
 
         //to enable
@@ -62,7 +58,7 @@ public class Player : MoveCharacter
     }
     private void GameWon()
     {
-        GameManager.Instance.ToNextStage();
+        GameManager.Instance.ToNextLevel();
     }
     #endregion
     #region HandleHit(Hit,Ground)

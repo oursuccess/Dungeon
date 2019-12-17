@@ -34,10 +34,17 @@ public class CameraController : MonoBehaviour
         ySizeMin = Camera.main.ViewportToWorldPoint(new Vector3(0, 0, 0)).y;
         ySizeMax = Camera.main.ViewportToWorldPoint(new Vector3(0, 1, 0)).y;
 
-        var moveObj = target.GetComponent<MoveObject>();
-        if(moveObj != null)
+        if(target == null)
         {
-            StartFollow(moveObj);
+            StartCoroutine(InitPlayerFollow());
+        }
+        else
+        {
+            var moveObj = target.GetComponent<MoveObject>();
+            if (moveObj != null)
+            {
+                StartFollow(moveObj);
+            }
         }
     }
     private void ChangeCameraPosition(MoveObject moveObject)
@@ -52,7 +59,7 @@ public class CameraController : MonoBehaviour
     }
     public void ChangeCameraPosition(Vector2 position)
     {
-        transform.position = position;
+        transform.position = (Vector3)position + offset;
         OnCameraPositionChanged?.Invoke();
     }
     public void ChangeFollow(GameObject moveObject)
@@ -62,6 +69,7 @@ public class CameraController : MonoBehaviour
     }
     private void ToggleOffFollow(MoveObject moveObject)
     {
+        transform.position = (Vector3)GameManager.Instance.RespawnPosition + offset;
         target.GetComponent<MoveObject>().Moving -= ChangeCameraPosition;
         target.GetComponent<MoveObject>().OnDead -= ToggleOffFollow;
     }
@@ -69,5 +77,19 @@ public class CameraController : MonoBehaviour
     {
         target.GetComponent<MoveObject>().Moving += ChangeCameraPosition;
         target.GetComponent<MoveObject>().OnDead += ToggleOffFollow;
+    }
+    private IEnumerator InitPlayerFollow()
+    {
+        while(target == null)
+        {
+            target = GameManager.Instance.player;
+            yield return null;
+        }
+        var moveObj = target.GetComponent<MoveObject>();
+        if (moveObj != null)
+        {
+            StartFollow(moveObj);
+        }
+        yield return true;
     }
 }

@@ -26,22 +26,28 @@ public class GameManager : MonoBehaviour
     {
         InitState();
     }
-    #region PlayerDied
+    #region Player
+    [SerializeField]
+    [Tooltip("玩家的预制体")]
+    private GameObject playerPrefab;
     public GameObject player { get; private set; }
     public Vector2 RespawnPosition { get; private set; }
     public void Restart()
     {
-        var oldOne = player;
+        Destroy(player);
         var camManager = Camera.main.GetComponent<CameraController>();
         camManager.ChangeCameraPosition(RespawnPosition);
-        player = Instantiate(player, RespawnPosition, Quaternion.identity);
+        player = Instantiate(playerPrefab, RespawnPosition, Quaternion.identity);
+        player.name = playerPrefab.name;
         camManager.ChangeFollow(player);
-        Destroy(oldOne);
     }
     private void InitPlayer()
     {
         player = GameObject.Find("Player");
-        RespawnPosition = player.transform.position;
+        if(player != null)
+        {
+            RespawnPosition = player.transform.position;
+        }
     }
     public void UpdateRespawnPosition(Vector2 newPos)
     {
@@ -49,7 +55,7 @@ public class GameManager : MonoBehaviour
     }
     public void GameOver()
     {
-        ShowDieMessage();
+        Restart();
     }
     private void ShowDieMessage()
     {
@@ -62,11 +68,15 @@ public class GameManager : MonoBehaviour
     {
         Stage = 1;
     }
-    public void ToNextStage()
+    public void ToNextLevel()
+    {
+        Stage++;
+        ToLevel("Level" + Stage.ToString().PadLeft(2, '0'));
+    }
+    public void ToLevel(string Level)
     {
         SceneManager.sceneLoaded += OnStageLoaded;
-        Stage++;
-        SceneManager.LoadScene("Level" + Stage.ToString().PadLeft(2, '0'));
+        SceneManager.LoadScene(Level);
     }
     private void OnStageLoaded(Scene scene, LoadSceneMode mode)
     {

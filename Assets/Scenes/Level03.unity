@@ -213,6 +213,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemObjects:
   - {fileID: 4136703599418295977, guid: 3290b5b1b3744f848aa05ab86eb55462, type: 3}
+  itemObjectesNums: 
   xInterD: 1
   dragD: 1
 --- !u!4 &397678449
@@ -369,11 +370,11 @@ MonoBehaviour:
   moveDistance: 1
   velocity: 1
   canMove: 0
+  moveDir: {x: 0, y: 0}
   sight: 5
   layer:
     serializedVersion: 2
     m_Bits: 2048
-  emote: {fileID: 1391969160}
 --- !u!212 &429412276
 SpriteRenderer:
   m_ObjectHideFlags: 0
