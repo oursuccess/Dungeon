@@ -83,7 +83,7 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
             {
                 lastMoveTime = 0f;
                 #region WhetherOnAir
-                target = FindAnythingOnDirection(Vector2.down, 0.7f);
+                target = FindAnythingOnDirection(Vector2.down, 0.3f);
                 if (target == null)
                 {
                     fallDistance += rigidBody2D.gravityScale * moveTime;

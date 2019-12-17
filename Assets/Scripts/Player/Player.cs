@@ -5,19 +5,13 @@ using UnityEngine.UI;
 
 public class Player : MoveCharacter
 {
-    #region Temp
-    private float animSizeXRatio = 0.1f;
-    private float animSizeYRatio = 0.1f;
-    #endregion
     protected override void Start()
     {
-        base.Start();
-
-        //to clean
-        gameObject.transform.localScale = new Vector2(animSizeXRatio, animSizeYRatio);
-
         moveDir = Vector2.right;
         currState = MoveState.Idle;
+        
+        base.Start();
+
         StartMove();
     }
     #region Old
@@ -101,21 +95,34 @@ public class Player : MoveCharacter
                 {
                     case MoveState.Idle:
                         {
-                            ChangeState(MoveState.Move);
+                            target = FindAnythingOnDirection(Vector2.down, 0.3f);
+                            Debug.Log("idle" + target);
+                            if (target == null)
+                            {
+                                Debug.Log("idle change to fall");
+                                ChangeState(MoveState.Fall);
+                            }
+                            else
+                            {
+                                Debug.Log("idle change to move");
+                                ChangeState(MoveState.Move);
+                            }
                         }
                         break;
                     case MoveState.Move:
                     case MoveState.Run:
                         {
-                            target = FindAnythingOnDirection(Vector2.down, 1f);
+                            target = FindAnythingOnDirection(Vector2.down, 0.3f);
+                            Debug.Log("move" + target);
                             if (target == null)
                             {
+                                Debug.Log("move change to fall");
                                 ChangeState(MoveState.Fall);
                             }
                             else
                             {
                                 Move();
-                                target = FindAnythingOnDirection(moveDir, 1f);
+                                target = FindAnythingOnDirection(moveDir, sightDistance);
                                 if(target != null)
                                 {
                                     IHandlePlayerSought playerSought = target.GetComponent<IHandlePlayerSought>();
@@ -129,7 +136,7 @@ public class Player : MoveCharacter
                         break;
                     case MoveState.Jump:
                         {
-                            target = FindAnythingOnDirection(Vector2.down, 1);
+                            target = FindAnythingOnDirection(Vector2.down, 0.3f);
                             if (target == null)
                             {
                                 ChangeState(MoveState.Fall);
@@ -138,18 +145,20 @@ public class Player : MoveCharacter
                         break;
                     case MoveState.Fall:
                         {
-                            target = FindAnythingOnDirection(Vector2.down, 1f);
+                            target = FindAnythingOnDirection(Vector2.down, 0.3f);
+                            Debug.Log("fall" + target);
                             if (target != null)
                             {
                                 IHaveTrampleEffect ihte = target.GetComponent<IHaveTrampleEffect>();
                                 if (ihte != null)
                                 {
-                                    ChangeState(MoveState.Idle);
+                                    ihte.OnBeenTrampled(this);
                                 }
                                 else
                                 {
                                     if (target.gameObject.name.Contains("Level"))
                                     {
+                                        Debug.Log("fall to idle");
                                         ChangeState(MoveState.Idle);
                                     }
                                     else
@@ -169,7 +178,7 @@ public class Player : MoveCharacter
                     case MoveState.FindThing:
                         {
                             Move();
-                            target = FindAnythingOnDirection(moveDir, 1f);
+                            target = FindAnythingOnDirection(moveDir, sightDistance);
                             IHandlePlayerSought playerSought = target.GetComponent<IHandlePlayerSought>();
                             if (playerSought == null)
                             {

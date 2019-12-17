@@ -6,6 +6,19 @@ using UnityEngine;
 public abstract class MoveObject : MonoBehaviour
 {
     #region Var
+    #region SupportVar
+    public float fallDistance { get; protected set; }
+    private float baseG;
+    protected float findDistance = 0.3f;
+    protected float edgeFindDistance = 0.01f;
+    protected float positionOffset = 0.03f;
+    public float colliderWidthToLeft { get; protected set; }
+    public float colliderWidthToRight { get; protected set; }
+    public float colliderHeightToUp { get; protected set; }
+    public float colliderHeightToBottom { get; protected set; }
+    public float colliderWidth { get; protected set; }
+    public float colliderHeight { get; protected set; }
+    #endregion
     #region move
     #region Editor
     [SerializeField]
@@ -26,10 +39,6 @@ public abstract class MoveObject : MonoBehaviour
     #endregion
     protected float lastMoveTime;
     protected Coroutine moveRoutine;
-    #region SupportVar
-    public float fallDistance { get; protected set; }
-    private float baseG;
-    #endregion
     #endregion
     #region object
     public Rigidbody2D rigidBody2D { get; protected set; }
@@ -73,7 +82,26 @@ public abstract class MoveObject : MonoBehaviour
         {
             boxcollider2D = GetComponent<BoxCollider2D>();
         }
-        baseG = rigidBody2D.gravityScale;    
+        baseG = rigidBody2D.gravityScale;
+
+        Vector2 start = transform.position;
+        colliderWidthToLeft = start.x - FindEdge(Vector2.left * edgeFindDistance).x;
+        colliderWidthToRight = FindEdge(Vector2.right * edgeFindDistance).x - start.x;
+        colliderWidth = colliderWidthToLeft + colliderWidthToRight;
+        colliderHeightToUp = FindEdge(Vector2.up * edgeFindDistance).y - start.y;
+        colliderHeightToBottom = start.y - FindEdge(Vector2.down * edgeFindDistance).y;
+        colliderHeight = colliderHeightToUp + colliderHeightToBottom;
+    }
+    protected virtual Vector2 FindEdge(Vector2 direction)
+    {
+        Vector2 start = transform.position;
+        Collider2D target;
+        while((target = Physics2D.Raycast(start, direction).collider) != null && target.gameObject == gameObject)
+        {
+            start += direction;
+        }
+
+        return start;
     }
     #endregion
     #region Move
@@ -171,13 +199,22 @@ public abstract class MoveObject : MonoBehaviour
         while(distanceNow >= 0.05f)
         {
             Vector2 target = Vector2.Lerp(start, end, lastMoveTime * velocity / moveTime);
-            rigidBody2D.MovePosition(target);
-            start = transform.position;
-            distanceNow = (end - start).sqrMagnitude;
-            lastMoveTime += Time.deltaTime;
-            Moving?.Invoke(this);
+            Collider2D collision = Physics2D.Linecast(start, target).collider;
+            if (collision != null && collision.gameObject.name.Contains("Level"))
+            {
+                distanceNow = 0;
+                yield return true;
+            }
+            else
+            {
+                rigidBody2D.MovePosition(target);
+                start = transform.position;
+                distanceNow = (end - start).sqrMagnitude;
+                lastMoveTime += Time.deltaTime;
+                Moving?.Invoke(this);
 
-            yield return null;
+                yield return null;
+            }
         }
     }
     private IEnumerator SmoothMovement(Vector2 direction)
@@ -189,13 +226,22 @@ public abstract class MoveObject : MonoBehaviour
         while(distanceNow >= 0.05f)
         {
             Vector2 target = Vector2.Lerp(start, end, lastMoveTime * velocity / moveTime);
-            rigidBody2D.MovePosition(target);
-            start = transform.position;
-            distanceNow = (end - start).sqrMagnitude;
-            lastMoveTime += Time.deltaTime;
+            Collider2D collision = Physics2D.Linecast(start, target).collider;
+            if(collision != null && collision.gameObject.name.Contains("Level"))
+            {
+                distanceNow = 0;
+                yield return true;
+            }
+            else
+            {
+                rigidBody2D.MovePosition(target);
+                start = transform.position;
+                distanceNow = (end - start).sqrMagnitude;
+                lastMoveTime += Time.deltaTime;
 
-            Moving?.Invoke(this);
-            yield return null;
+                Moving?.Invoke(this);
+                yield return null;
+            }
         }
     }
     #endregion
@@ -218,19 +264,130 @@ public abstract class MoveObject : MonoBehaviour
     }
     protected virtual bool FindThingOnDirection(LayerMask layer, Vector2 direction, float distance, out RaycastHit2D hit)
     {
-        Vector2 start = transform.position;
-        Vector2 end = start + direction * distance;
-        boxcollider2D.enabled = false;
-        hit = Physics2D.Linecast(start, end, layer);
-        boxcollider2D.enabled = true;
-        if(hit.collider != null)
+        if (direction == Vector2.zero)
         {
-            return true;
+            hit = new RaycastHit2D();
+            return false;
+        }
+        float baseXPos = transform.position.x;
+        float baseYPos = transform.position.y;
+        positionOffset = distance / 3;
+        
+        if(direction.x == 0)
+        {
+            float yOffset = direction.y > 0 ? colliderHeightToUp - positionOffset: -colliderHeightToBottom + positionOffset;
+            float YPos = baseYPos + yOffset;
+            baseXPos -= colliderWidthToLeft;
+
+            for (float x = 0f; x < colliderWidth; x += findDistance)
+            {
+                Vector2 start = new Vector2(baseXPos + x, YPos);
+                Vector2 end = start + direction * distance;
+
+                boxcollider2D.enabled = false;
+                hit = Physics2D.Linecast(start, end, layer);
+#if UNITY_EDITOR
+                Debug.DrawLine(start, end, Color.red);
+#endif
+                boxcollider2D.enabled = true;
+                if (hit.collider != null)
+                {
+                    return true;
+                }
+            }
+        }
+        else if (direction.x != 0 && direction.y == 0)
+        {
+            float xOffset = direction.x > 0 ? colliderWidthToRight - positionOffset: -colliderWidthToLeft + positionOffset; 
+            float XPos = baseXPos + xOffset;
+            baseYPos -= colliderHeightToBottom;
+
+            for (float y = 0f; y < colliderHeight; y += findDistance)
+            {
+                Vector2 start = new Vector2(XPos, baseYPos + y);
+                Vector2 end = start + direction * distance;
+
+                boxcollider2D.enabled = false;
+                hit = Physics2D.Linecast(start, end, layer);
+#if UNITY_EDITOR
+                Debug.DrawLine(start, end, Color.red);
+#endif
+                boxcollider2D.enabled = true;
+                if (hit.collider != null)
+                {
+                    return true;
+                }
+            }
         }
         else
         {
-            return false;
+            Debug.Log("尚未实现非横向纵向检测");
         }
+        hit = new RaycastHit2D();
+        return false;
+    }
+    protected virtual GameObject FindAnythingOnDirection(Vector2 direction, float distance)
+    {
+        GameObject res = null;
+        if (direction == Vector2.zero) return res;
+
+        float baseXPos = transform.position.x;
+        float baseYPos = transform.position.y;
+        positionOffset = distance / 3;
+
+        if(direction.x == 0)
+        {
+            float yOffset = direction.y > 0 ? colliderHeightToUp - positionOffset: -colliderHeightToBottom + positionOffset;
+            float YPos = baseYPos + yOffset;
+            baseXPos -= colliderWidthToLeft;
+
+            for(float x = 0f; x <= colliderWidth; x += findDistance)
+            {
+                Vector2 start = new Vector2(baseXPos + x, YPos);
+                Vector2 end = start + direction * distance;
+
+                boxcollider2D.enabled = false;
+                var hit = Physics2D.Linecast(start, end);
+#if UNITY_EDITOR
+                Debug.DrawLine(start, end, Color.red);
+#endif
+                boxcollider2D.enabled = true;
+                if (hit.collider != null)
+                {
+                    res = hit.collider.gameObject;
+                    return res;
+                }
+            }
+        }
+        else if(direction.x != 0 && direction.y == 0)
+        {
+            float xOffset = direction.x > 0 ? colliderWidthToRight - positionOffset: -colliderWidthToLeft + positionOffset;
+            float XPos = baseXPos + xOffset;
+            baseYPos -= colliderHeightToBottom;
+
+            for (float y = 0f; y <= colliderHeight; y += findDistance)
+            {
+                Vector2 start = new Vector2(XPos, baseYPos + y);
+                Vector2 end = start + direction * distance;
+
+                boxcollider2D.enabled = false;
+                var hit = Physics2D.Linecast(start, end);
+                boxcollider2D.enabled = true;
+#if UNITY_EDITOR
+                Debug.DrawLine(start, end, Color.red);
+#endif
+                if (hit.collider != null)
+                {
+                    res = hit.collider.gameObject;
+                    return res;
+                }
+            }
+        }
+        else
+        {
+            Debug.Log("尚未实现斜向检测");
+        }
+        return res;
     }
     protected virtual GameObject FindWithEye<T>()
     {
@@ -273,21 +430,6 @@ public abstract class MoveObject : MonoBehaviour
         if (Mathf.Abs(collision.transform.position.y - transform.position.y) <= 1f)
         {
             res = true;
-        }
-        return res;
-    }
-    protected virtual GameObject FindAnythingOnDirection(Vector2 direction, float distance)
-    {
-        GameObject res = null;
-        boxcollider2D.enabled = false;
-        Vector2 start = transform.position;
-        Vector2 end = start + direction * distance;
-        var hit = Physics2D.Linecast(start, end);
-        boxcollider2D.enabled = true;
-        if(hit.collider != null)
-        {
-            res = hit.collider.gameObject;
-            Debug.Log(res);
         }
         return res;
     }
