@@ -24,10 +24,9 @@ public class Spine : MonoBehaviour, IHandlePlayerHit
     private void StartCrawl()
     {
        transform.GetComponent<BoxCollider2D>().enabled = false;
-        float realD = CalculatePlayerMoveDistance();
-        player.ChangeGravity(0, (realD + 4f) * player.moveTime);
-        player.ForceMove(new Vector2(0, realD), 1f);
-        Invoke("PlayerMoveNext", realD * player.moveTime);
+        player.ChangeGravity(0, (spineHeight + 2f) * player.moveTime);
+        player.Move(new Vector2(0, spineHeight));
+        Invoke("PlayerMoveNext", spineHeight * player.moveTime);
     }
     private void PlayerMoveNext()
     {
@@ -42,7 +41,7 @@ public class Spine : MonoBehaviour, IHandlePlayerHit
     private void FindHeight()
     {
         Vector2 start = transform.position;
-        Vector2 findVUp = new Vector2(0, 0.1f);
+        Vector2 findVUp = new Vector2(0, 0.03f);
         Collider2D target;
         while((target = Physics2D.Raycast(start, findVUp).collider) != null && target.gameObject == gameObject)
         {
@@ -50,7 +49,7 @@ public class Spine : MonoBehaviour, IHandlePlayerHit
         }
         Vector2 up = start;
         start = transform.position;
-        Vector2 findVDown = new Vector2(0, -0.1f);
+        Vector2 findVDown = new Vector2(0, -0.03f);
         while((target = Physics2D.Raycast(start, findVDown).collider) != null && target.gameObject == gameObject)
         {
             start += findVDown;
