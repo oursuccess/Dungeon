@@ -129,9 +129,18 @@ public abstract class MoveCharacter : MoveObject
                 break;
             case MoveState.FindThing:
                 break;
+            case MoveState.Fall:
+                animator.SetBool("Running", false);
+                break;
             default:
                 break;
         }
+    }
+    #endregion
+    #region Collider
+    protected override void OnCollisionEnter2D(Collision2D collision)
+    {
+        base.OnCollisionEnter2D(collision);
     }
     #endregion
 }

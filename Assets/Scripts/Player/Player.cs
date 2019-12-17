@@ -116,10 +116,13 @@ public class Player : MoveCharacter
                             {
                                 Move();
                                 target = FindAnythingOnDirection(moveDir, 1f);
-                                IHandlePlayerSought playerSought = target.GetComponent<IHandlePlayerSought>();
-                                if (playerSought != null)
+                                if(target != null)
                                 {
-                                    playerSought.OnPlayerSought(this);
+                                    IHandlePlayerSought playerSought = target.GetComponent<IHandlePlayerSought>();
+                                    if (playerSought != null)
+                                    {
+                                        playerSought.OnPlayerSought(this);
+                                    }
                                 }
                             }
                         }
@@ -135,7 +138,7 @@ public class Player : MoveCharacter
                         break;
                     case MoveState.Fall:
                         {
-                            target = FindAnythingOnDirection(Vector2.down, 3);
+                            target = FindAnythingOnDirection(Vector2.down, 1f);
                             if (target != null)
                             {
                                 IHaveTrampleEffect ihte = target.GetComponent<IHaveTrampleEffect>();
@@ -145,7 +148,14 @@ public class Player : MoveCharacter
                                 }
                                 else
                                 {
-                                    fallDistance += rigidBody2D.gravityScale * moveTime;
+                                    if (target.gameObject.name.Contains("Level"))
+                                    {
+                                        ChangeState(MoveState.Idle);
+                                    }
+                                    else
+                                    {
+                                        fallDistance += rigidBody2D.gravityScale * moveTime;
+                                    }
                                 }
                             }
                             //wait for hit collider

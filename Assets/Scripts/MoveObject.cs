@@ -9,11 +9,13 @@ public abstract class MoveObject : MonoBehaviour
     #region move
     #region Editor
     [SerializeField]
+    [Range(0f, 10f)]
     [Tooltip("移动所需的时间，单位（秒）")]
-    protected float moveTime = 1;
+    public float moveTime = 1;
     [SerializeField]
+    [Range(0f, 10f)]
     [Tooltip("单次移动的距离")]
-    protected float moveDistance = 1;
+    public float moveDistance = 1;
     [SerializeField]
     [Tooltip("移动速度")]
     protected float velocity = 1;
@@ -26,6 +28,7 @@ public abstract class MoveObject : MonoBehaviour
     protected Coroutine moveRoutine;
     #region SupportVar
     public float fallDistance { get; protected set; }
+    private float baseG;
     #endregion
     #endregion
     #region object
@@ -37,6 +40,19 @@ public abstract class MoveObject : MonoBehaviour
     public event MovingDel Moving;
     public delegate void DieDel(MoveObject moveObject);
     public event DieDel OnDead;
+    #endregion
+    #region Sight
+    [Tooltip("影响对象的视野距离，10为全屏范围")]
+    [SerializeField]
+    protected float sightDistance;
+    [Tooltip("影响视野范围，360表示所有角度均可观测，0表示前方一条线，90代表前方上下各45度")]
+    [SerializeField]
+    protected int sightRange;
+    public Vector2 sightDirection;
+    [SerializeField]
+    [Range(0, 100)]
+    [Tooltip("移动的意愿")]
+    protected int moveWill;
     #endregion
     #endregion
     #region Init
@@ -57,6 +73,7 @@ public abstract class MoveObject : MonoBehaviour
         {
             boxcollider2D = GetComponent<BoxCollider2D>();
         }
+        baseG = rigidBody2D.gravityScale;    
     }
     #endregion
     #region Move
@@ -158,6 +175,7 @@ public abstract class MoveObject : MonoBehaviour
             start = transform.position;
             distanceNow = (end - start).sqrMagnitude;
             lastMoveTime += Time.deltaTime;
+            Moving?.Invoke(this);
 
             yield return null;
         }
@@ -185,7 +203,7 @@ public abstract class MoveObject : MonoBehaviour
     #region CollisionNFind
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.tag.Contains("Ground"))
+        if (collision.gameObject.tag.Contains("Level"))
         {
             fallDistance = 0;
         }
@@ -214,6 +232,32 @@ public abstract class MoveObject : MonoBehaviour
             return false;
         }
     }
+    protected virtual GameObject FindWithEye<T>()
+    {
+        boxcollider2D.enabled = false;
+        GameObject res = null;
+        //查找相关内容
+        RaycastHit2D hit;
+        Vector2 start = transform.position;
+        for(int i = 0; i <= sightRange / 2; i += 10)
+        {
+            float f = (float)i / 180;
+            Vector2 end = start + new Vector2(sightDirection.x, sightDirection.y + f) * sightDistance;
+            hit = Physics2D.Linecast(start, end);
+            if(hit.collider == null)
+            {
+                hit = Physics2D.Linecast(start, end);
+            }
+            if (hit.collider != null && hit.collider.gameObject.GetComponent<T>() != null)
+            {
+                res = hit.collider.gameObject;
+                boxcollider2D.enabled = true;
+                return res;
+            }
+        }
+        boxcollider2D.enabled = true;
+        return res;
+    }
     private bool IsBelowThanMe(GameObject gameObject)
     {
         if (gameObject.transform.position.y < transform.position.y && Mathf.Abs(gameObject.transform.position.x - transform.position.x) <= 1.5)
@@ -236,13 +280,41 @@ public abstract class MoveObject : MonoBehaviour
     {
         GameObject res = null;
         boxcollider2D.enabled = false;
-        var hit = Physics2D.Raycast(transform.position, direction * distance);
+        Vector2 start = transform.position;
+        Vector2 end = start + direction * distance;
+        var hit = Physics2D.Linecast(start, end);
         boxcollider2D.enabled = true;
         if(hit.collider != null)
         {
             res = hit.collider.gameObject;
+            Debug.Log(res);
         }
         return res;
+    }
+    #endregion
+    #region Gravity
+    public void ChangeGravity(float gravity, float resetTime = 0)
+    {
+        if(resetTime > 0)
+        {
+            StartCoroutine(SetGravity(gravity, resetTime));
+        }
+        else
+        {
+            rigidBody2D.gravityScale = gravity;
+        }
+    }
+    private IEnumerator SetGravity(float gravity, float resetTime)
+    {
+        rigidBody2D.gravityScale = gravity;
+        float passT = 0f;
+        while(passT < resetTime)
+        {
+            passT += Time.deltaTime;
+            yield return null;
+        }
+        rigidBody2D.gravityScale = baseG;
+        yield return true;
     }
     #endregion
     #region Die

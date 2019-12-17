@@ -103,7 +103,7 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
                 if (moveState.currState == MoveState.Idle || moveState.currState == MoveState.Move)
                 {
 
-                    target = Find<Player>();
+                    target = FindWithEye<Player>();
                     if (target != null)
                     {
                         ChangeState(MoveState.FindPlayer);
@@ -111,7 +111,7 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
                     }
                     else
                     {
-                        target = Find<IMadeByMetal>();
+                        target = FindWithEye<IMadeByMetal>();
                         if (target != null)
                         {
                             ChangeState(MoveState.FindMetal);
@@ -136,7 +136,7 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
                 if (moveState.currState == MoveState.FindPlayer)
                 {
                     MoveNChangeDirection(target.transform.position - transform.position);
-                    if (Find<Player>() == null)
+                    if (FindWithEye<Player>() == null)
                     {
                         ChangeState(MoveState.LosePlayer);
                     }
@@ -145,7 +145,7 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
                 if (moveState.currState == MoveState.FindMetal)
                 {
                     MoveNChangeDirection(target.transform.position - transform.position);
-                    if (Find<IMadeByMetal>() == null)
+                    if (FindWithEye<IMadeByMetal>() == null)
                     {
                         ChangeState(MoveState.LoseMetal);
                     }

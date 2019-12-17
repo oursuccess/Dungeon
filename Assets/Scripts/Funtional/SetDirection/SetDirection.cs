@@ -127,11 +127,11 @@ public class SetDirection : MonoBehaviour
         //根据方向为对应的移动组件赋值
         if(direction == rightArrowComp)
         {
-            item.gameObject.GetComponent<MoveItem>().direction = Vector2.right;
+            item.gameObject.GetComponent<MoveItem>().moveDir = Vector2.right;
         }
         else if(direction == leftArrowComp)
         {
-            item.gameObject.GetComponent<MoveItem>().direction = Vector2.left;
+            item.gameObject.GetComponent<MoveItem>().moveDir = Vector2.left;
         }
         rightArrowComp.OnDirectionSelected -= OnDirectionSelected;
         leftArrowComp.OnDirectionSelected -= OnDirectionSelected;

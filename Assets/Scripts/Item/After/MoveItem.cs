@@ -39,20 +39,6 @@ public abstract class MoveItem : MoveObject
     }
     public BaseMoveState moveState { get; protected set; }
     #endregion
-    #region Sight
-    [Tooltip("影响对象的视野距离，10为全屏范围")]
-    [SerializeField]
-    protected float sightDistance;
-    [Tooltip("影响视野范围，360表示所有角度均可观测，0表示前方一条线，90代表前方上下各45度")]
-    [SerializeField]
-    protected int sightRange;
-    protected CircleCollider2D sightCollider;
-    public Vector2 direction;
-    [SerializeField]
-    [Range(0, 100)]
-    [Tooltip("移动的意愿")]
-    protected int moveWill;
-    #endregion
     protected override void Start()
     {
         base.Start();
@@ -80,36 +66,10 @@ public abstract class MoveItem : MoveObject
         base.StopMove(stopTime);
     }
     protected abstract IEnumerator MovingImpl();
-    protected virtual GameObject Find<T>()
-    {
-        boxcollider2D.enabled = false;
-        GameObject res = null;
-        //查找相关内容
-        RaycastHit2D hit;
-        Vector2 start = transform.position;
-        for(int i = 0; i <= sightRange / 2; i += 10)
-        {
-            float f = (float)i / 180;
-            Vector2 dir = new Vector2(direction.x, direction.y + f);
-            hit = Physics2D.Raycast(start, dir, sightDistance);
-            if(hit.collider == null)
-            {
-                hit = Physics2D.Raycast(start, dir, sightDistance);
-            }
-            if (hit.collider != null && hit.collider.gameObject.GetComponent<T>() != null)
-            {
-                res = hit.collider.gameObject;
-                boxcollider2D.enabled = true;
-                return res;
-            }
-        }
-        boxcollider2D.enabled = true;
-        return res;
-    }
     public override void Init() 
     {
         moveWill = UnityEngine.Random.Range(0, 100);
-        moveDir = direction;
+        sightDirection = moveDir;
         base.Init();
     }
     protected override void Dead()

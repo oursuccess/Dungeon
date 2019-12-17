@@ -5,31 +5,36 @@ using UnityEngine;
 public class Spine : MonoBehaviour, IHandlePlayerHit
 {
     private Player player;
-    private float height;
+    private float spineHeight;
     void Start()
     {
         FindHeight();
     }
     public void OnPlayerHit(Player player)
     {
-        StartCrawl(player);
-        Invoke("StopPlayerHit", 1f);
+        PreCrawl(player);
     }
-    private void StartCrawl(Player player)
+    private void PreCrawl(Player player)
     {
         this.player = player;
         player.ChangeState(MoveCharacter.MoveState.Crawl);
-        transform.GetComponent<BoxCollider2D>().enabled = false;
+        player.MoveWithAnim(transform.position - player.transform.position, 1);
+        Invoke("StartCrawl", player.moveTime);
+    }
+    private void StartCrawl()
+    {
+       transform.GetComponent<BoxCollider2D>().enabled = false;
         float realD = CalculatePlayerMoveDistance();
+        player.ChangeGravity(0, (realD + 4f) * player.moveTime);
         player.ForceMove(new Vector2(0, realD), 1f);
-        Invoke("PlayerMoveNext", realD);
+        Invoke("PlayerMoveNext", realD * player.moveTime);
     }
     private void PlayerMoveNext()
     {
         player.MoveWithAnim(player.moveDir, 1f);
-        Invoke("StopPlayerCrawl", 1f);
+        Invoke("StopCrawl", player.moveTime);
     }
-    private void StopPlayerCrawl()
+    private void StopCrawl()
     {
         player.ChangeState(MoveCharacter.MoveState.Idle);
         transform.GetComponent<BoxCollider2D>().enabled = true;
@@ -52,7 +57,7 @@ public class Spine : MonoBehaviour, IHandlePlayerHit
         }
         Vector2 down = start;
 
-        height = up.y - down.y + 0.1f;
+        spineHeight = up.y - down.y + 0.2f;
     }
     private float CalculatePlayerMoveDistance()
     {
@@ -65,6 +70,6 @@ public class Spine : MonoBehaviour, IHandlePlayerHit
             down += findVDown;
         }
         playerH = player.transform.position.y - down.y;
-        return height - playerH;
+        return spineHeight + playerH;
     }
 }
