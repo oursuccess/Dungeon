@@ -72,7 +72,7 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
     }
     protected override IEnumerator MovingImpl()
     {
-        GameObject target = null;
+        Collider2D target = null;
         while (true)
         {
             if(lastMoveTime <= moveTime)
@@ -117,21 +117,26 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
                             ChangeState(MoveState.FindMetal);
                             yield return null;
                         }
-                    }
-                    if (target == null)
-                    {
-                        if (UnityEngine.Random.Range(0, 100) <= moveWill)
-                        {
-                            Move();
-                            ChangeState(MoveState.Move);
-                            yield return null;
-                        }
                         else
                         {
-                            ChangeState(MoveState.Idle);
-                            yield return null;
+                            target = FindAnythingOnDirection(moveDir, moveDistance);
+                            if (target == null)
+                            {
+                                if (UnityEngine.Random.Range(0, 100) <= moveWill)
+                                {
+                                    Move();
+                                    ChangeState(MoveState.Move);
+                                    yield return null;
+                                }
+                                else
+                                {
+                                    ChangeState(MoveState.Idle);
+                                    yield return null;
+                                }
+                            }
                         }
                     }
+
                 }
                 if (moveState.currState == MoveState.FindPlayer)
                 {

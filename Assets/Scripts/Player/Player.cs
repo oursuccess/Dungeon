@@ -81,7 +81,7 @@ public class Player : MoveCharacter
     #region Move
     private IEnumerator MoveImpl()
     {
-        GameObject target = null;
+        Collider2D target = null;
         while (canMove)
         {
             if(lastMoveTime <= moveTime) 
@@ -96,16 +96,17 @@ public class Player : MoveCharacter
                     case MoveState.Idle:
                         {
                             target = FindAnythingOnDirection(Vector2.down, 0.3f);
-                            Debug.Log("idle" + target);
                             if (target == null)
                             {
-                                Debug.Log("idle change to fall");
                                 ChangeState(MoveState.Fall);
                             }
                             else
                             {
-                                Debug.Log("idle change to move");
-                                ChangeState(MoveState.Move);
+                                target = FindAnythingOnDirection(moveDir, moveDistance);
+                                if(target == null || target.isTrigger == true)
+                                {
+                                    ChangeState(MoveState.Move);
+                                }
                             }
                         }
                         break;
@@ -113,24 +114,30 @@ public class Player : MoveCharacter
                     case MoveState.Run:
                         {
                             target = FindAnythingOnDirection(Vector2.down, 0.3f);
-                            Debug.Log("move" + target);
                             if (target == null)
                             {
-                                Debug.Log("move change to fall");
                                 ChangeState(MoveState.Fall);
                             }
                             else
                             {
-                                Move();
-                                target = FindAnythingOnDirection(moveDir, sightDistance);
-                                if(target != null)
+                                target = FindAnythingOnDirection(moveDir, moveDistance);
+                                if(target == null || target.isTrigger == true)
                                 {
-                                    IHandlePlayerSought playerSought = target.GetComponent<IHandlePlayerSought>();
-                                    if (playerSought != null)
+                                    Move();
+                                }
+                                else
+                                {
+                                    target = FindAnythingOnDirection(moveDir, sightDistance);
+                                    if(target != null)
                                     {
-                                        playerSought.OnPlayerSought(this);
+                                        IHandlePlayerSought playerSought = target.gameObject.GetComponent<IHandlePlayerSought>();
+                                        if (playerSought != null)
+                                        {
+                                            playerSought.OnPlayerSought(this);
+                                        }
                                     }
                                 }
+                               
                             }
                         }
                         break;
@@ -149,7 +156,7 @@ public class Player : MoveCharacter
                             Debug.Log("fall" + target);
                             if (target != null)
                             {
-                                IHaveTrampleEffect ihte = target.GetComponent<IHaveTrampleEffect>();
+                                IHaveTrampleEffect ihte = target.gameObject.GetComponent<IHaveTrampleEffect>();
                                 if (ihte != null)
                                 {
                                     ihte.OnBeenTrampled(this);
@@ -179,7 +186,7 @@ public class Player : MoveCharacter
                         {
                             Move();
                             target = FindAnythingOnDirection(moveDir, sightDistance);
-                            IHandlePlayerSought playerSought = target.GetComponent<IHandlePlayerSought>();
+                            IHandlePlayerSought playerSought = target.gameObject.GetComponent<IHandlePlayerSought>();
                             if (playerSought == null)
                             {
                                 ChangeState(MoveState.Idle);

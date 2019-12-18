@@ -3351,7 +3351,7 @@ CompositeCollider2D:
   m_Offset: {x: 0, y: 0}
   m_GeometryType: 0
   m_GenerationType: 0
-  m_EdgeRadius: 0
+  m_EdgeRadius: 0.1
   m_ColliderPaths:
   - m_Collider: {fileID: 790053394}
     m_ColliderPaths:
@@ -3859,6 +3859,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4923009947754245593, guid: 37c1b7377fd73c847859c7115e97683c,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -40.13
+      objectReference: {fileID: 0}
+    - target: {fileID: 4923009947754245593, guid: 37c1b7377fd73c847859c7115e97683c,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.26
+      objectReference: {fileID: 0}
     - target: {fileID: 3960427238079106197, guid: 37c1b7377fd73c847859c7115e97683c,
         type: 3}
       propertyPath: m_Name
@@ -3968,16 +3978,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Pivot.y
       value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 4923009947754245593, guid: 37c1b7377fd73c847859c7115e97683c,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -40.13
-      objectReference: {fileID: 0}
-    - target: {fileID: 4923009947754245593, guid: 37c1b7377fd73c847859c7115e97683c,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -0.26
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 37c1b7377fd73c847859c7115e97683c, type: 3}

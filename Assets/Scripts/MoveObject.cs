@@ -229,6 +229,7 @@ public abstract class MoveObject : MonoBehaviour
             Collider2D collision = Physics2D.Linecast(start, target).collider;
             if(collision != null && collision.gameObject.name.Contains("Level"))
             {
+                Debug.Log("find collider");
                 distanceNow = 0;
                 yield return true;
             }
@@ -326,9 +327,9 @@ public abstract class MoveObject : MonoBehaviour
         hit = new RaycastHit2D();
         return false;
     }
-    protected virtual GameObject FindAnythingOnDirection(Vector2 direction, float distance)
+    protected virtual Collider2D FindAnythingOnDirection(Vector2 direction, float distance)
     {
-        GameObject res = null;
+        Collider2D res = null;
         if (direction == Vector2.zero) return res;
 
         float baseXPos = transform.position.x;
@@ -354,7 +355,7 @@ public abstract class MoveObject : MonoBehaviour
                 boxcollider2D.enabled = true;
                 if (hit.collider != null)
                 {
-                    res = hit.collider.gameObject;
+                    res = hit.collider;
                     return res;
                 }
             }
@@ -378,7 +379,7 @@ public abstract class MoveObject : MonoBehaviour
 #endif
                 if (hit.collider != null)
                 {
-                    res = hit.collider.gameObject;
+                    res = hit.collider;
                     return res;
                 }
             }
@@ -389,10 +390,10 @@ public abstract class MoveObject : MonoBehaviour
         }
         return res;
     }
-    protected virtual GameObject FindWithEye<T>()
+    protected virtual Collider2D FindWithEye<T>()
     {
         boxcollider2D.enabled = false;
-        GameObject res = null;
+        Collider2D res = null;
         //查找相关内容
         RaycastHit2D hit;
         Vector2 start = transform.position;
@@ -407,7 +408,7 @@ public abstract class MoveObject : MonoBehaviour
             }
             if (hit.collider != null && hit.collider.gameObject.GetComponent<T>() != null)
             {
-                res = hit.collider.gameObject;
+                res = hit.collider;
                 boxcollider2D.enabled = true;
                 return res;
             }
