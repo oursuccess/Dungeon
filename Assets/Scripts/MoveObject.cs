@@ -6,18 +6,36 @@ using UnityEngine;
 public abstract class MoveObject : MonoBehaviour
 {
     #region Var
-    #region SupportVar
-    public float fallDistance { get; protected set; }
+    #region Gravity
     private float baseG;
-    protected float findDistance = 0.3f;
+    #endregion
+    #region Collision
+    #region Support
     protected float edgeFindDistance = 0.01f;
     protected float positionOffset = 0.03f;
+    protected int overlapTriggers = 0;
+    protected int overlapCollisions = 0;
+    #endregion
     public float colliderWidthToLeft { get; protected set; }
     public float colliderWidthToRight { get; protected set; }
     public float colliderHeightToUp { get; protected set; }
     public float colliderHeightToBottom { get; protected set; }
     public float colliderWidth { get; protected set; }
     public float colliderHeight { get; protected set; }
+    public bool isInTrigger
+    {
+        get
+        {
+            return overlapTriggers > 0;
+        }
+    }
+    public bool isInCollision
+    {
+        get
+        {
+            return overlapCollisions > 0;
+        }
+    }
     #endregion
     #region move
     #region Editor
@@ -31,16 +49,22 @@ public abstract class MoveObject : MonoBehaviour
     public float moveDistance = 1;
     [SerializeField]
     [Tooltip("移动速度")]
-    protected float velocity = 1;
+    public float velocity = 1;
     [Tooltip("是否可以移动")]
     public bool canMove;
     [Tooltip("目前的移动方向")]
     public Vector2 moveDir;
+    [SerializeField]
+    [Range(0, 100)]
+    [Tooltip("移动的意愿")]
+    protected int moveWill;
     #endregion
     protected float lastMoveTime;
     protected Coroutine moveRoutine;
+    protected float findDistance = 0.3f;
+    public float fallDistance { get; protected set; }
     #endregion
-    #region object
+    #region Componnent
     public Rigidbody2D rigidBody2D { get; protected set; }
     public BoxCollider2D boxcollider2D { get; protected set; }
     #endregion
@@ -58,10 +82,6 @@ public abstract class MoveObject : MonoBehaviour
     [SerializeField]
     protected int sightRange;
     public Vector2 sightDirection;
-    [SerializeField]
-    [Range(0, 100)]
-    [Tooltip("移动的意愿")]
-    protected int moveWill;
     #endregion
     #endregion
     #region Init
@@ -100,7 +120,6 @@ public abstract class MoveObject : MonoBehaviour
         {
             start += direction;
         }
-
         return start;
     }
     #endregion
@@ -161,16 +180,13 @@ public abstract class MoveObject : MonoBehaviour
     }
     public virtual void Move()
     {
-        if (canMove)
-        {
-            if (moveRoutine != null)
-            {
-                StopCoroutine(moveRoutine);
-            }
-            moveRoutine = StartCoroutine(SmoothMovement(moveDir));
-        }
-   }
+        Move(moveDir);
+    }
     public virtual void Move(Vector2 direction)
+    {
+        Move(moveDir, moveDistance, velocity);
+    }
+    public virtual void Move(Vector2 direction, float distance, float velocity)
     {
         if (canMove)
         {
@@ -178,56 +194,31 @@ public abstract class MoveObject : MonoBehaviour
             {
                 StopCoroutine(moveRoutine);
             }
-            moveRoutine = StartCoroutine(SmoothMovement(direction));
-
+            moveRoutine = StartCoroutine(SmoothMovement(direction, distance, velocity));
         }
+    }
+    public virtual void ForceMove(Vector2 direction)
+    {
+        ForceMove(direction, velocity);
     }
     public virtual void ForceMove(Vector2 direction, float velocity)
     {
-        if(moveRoutine != null)
-        {
-            StopCoroutine(moveRoutine);
-        }
-        StartCoroutine(ForceMovement(direction, velocity));
+        ForceMove(direction, moveDistance, velocity);
     }
-    private IEnumerator ForceMovement(Vector2 direction, float velocity)
+    public virtual void ForceMove(Vector2 direction, float distance, float velocity)
     {
+        StartCoroutine(ForceMovement(direction, distance, velocity));
+    }
+    private IEnumerator SmoothMovement(Vector2 direction, float distance, float velocity) {
         Vector2 start = transform.position;
-        Vector2 end = start + direction;
+        Vector2 end = start + direction * distance;
         float distanceNow = direction.sqrMagnitude;
 
         while(distanceNow >= 0.05f)
         {
             Vector2 target = Vector2.Lerp(start, end, lastMoveTime * velocity / moveTime);
             Collider2D collision = Physics2D.Linecast(start, target).collider;
-            if (collision != null && collision.gameObject.name.Contains("Level"))
-            {
-                distanceNow = 0;
-                yield return true;
-            }
-            else
-            {
-                rigidBody2D.MovePosition(target);
-                start = transform.position;
-                distanceNow = (end - start).sqrMagnitude;
-                lastMoveTime += Time.deltaTime;
-                Moving?.Invoke(this);
-
-                yield return null;
-            }
-        }
-    }
-    private IEnumerator SmoothMovement(Vector2 direction)
-    {
-        Vector2 start = transform.position;
-        Vector2 end = start + direction;
-        float distanceNow = direction.sqrMagnitude;
-
-        while(distanceNow >= 0.05f)
-        {
-            Vector2 target = Vector2.Lerp(start, end, lastMoveTime * velocity / moveTime);
-            Collider2D collision = Physics2D.Linecast(start, target).collider;
-            if(collision != null && collision.gameObject.name.Contains("Level"))
+            if(collision != null && IsUnmovableWall(collision))
             {
                 Debug.Log("find collider");
                 distanceNow = 0;
@@ -245,11 +236,39 @@ public abstract class MoveObject : MonoBehaviour
             }
         }
     }
+    private IEnumerator ForceMovement(Vector2 direction, float distance, float velocity)
+    {
+        Vector2 start = transform.position;
+        Vector2 end = start + direction * distance;
+        float distanceNow = direction.sqrMagnitude;
+
+        while(distanceNow >= 0.05f)
+        {
+            Vector2 target = Vector2.Lerp(start, end, velocity / moveTime);
+            Collider2D collision = Physics2D.Linecast(start, target).collider;
+            if(collision != null && IsUnmovableWall(collision))
+            {
+                distanceNow = 0;
+                yield return true;
+            }
+            else
+            {
+                rigidBody2D.MovePosition(target);
+                start = transform.position;
+                distanceNow = (end - start).sqrMagnitude;
+
+                Moving?.Invoke(this);
+                yield return null;
+            }
+        }
+    }
     #endregion
     #endregion
     #region CollisionNFind
+    #region Collision
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
+        overlapCollisions++;
         if (collision.gameObject.tag.Contains("Level"))
         {
             fallDistance = 0;
@@ -263,6 +282,50 @@ public abstract class MoveObject : MonoBehaviour
             }
         }
     }
+    protected virtual void OnCollisionExit2D(Collision2D collision)
+    {
+        overlapCollisions--;
+    }
+    protected virtual void OnTriggerEnter2D(Collider2D collision)
+    {
+        overlapTriggers++;
+    }
+    protected virtual void OnTriggerExit2D(Collider2D collision)
+    {
+        overlapTriggers--;
+    }
+    private bool IsBelowThanMe(GameObject gameObject)
+    {
+        if (gameObject.transform.position.y < transform.position.y && Mathf.Abs(gameObject.transform.position.x - transform.position.x) <= 1.5)
+        {
+            return true;
+        }
+        return false;
+    }
+    protected virtual bool OnHitArea(Collision2D collision)
+    {
+        bool res = false;
+        //这样要求所有角色的位置放在下方而非中心；或者所有角色的大小相近（不超过2）
+        if (Mathf.Abs(collision.transform.position.y - transform.position.y) <= 1f)
+        {
+            res = true;
+        }
+        return res;
+    }
+    protected virtual bool IsGround(Collider2D collision)
+    {
+        return collision.gameObject.name.Contains("Level");
+    }
+    protected virtual bool IsGround(GameObject gameObject)
+    {
+        return gameObject.name.Contains("Level");
+    }
+    protected virtual bool IsUnmovableWall(Collider2D collision)
+    {
+        return collision.gameObject.name.Contains("Level");
+    }
+    #endregion
+    #region Find
     protected virtual bool FindThingOnDirection(LayerMask layer, Vector2 direction, float distance, out RaycastHit2D hit)
     {
         if (direction == Vector2.zero)
@@ -416,24 +479,7 @@ public abstract class MoveObject : MonoBehaviour
         boxcollider2D.enabled = true;
         return res;
     }
-    private bool IsBelowThanMe(GameObject gameObject)
-    {
-        if (gameObject.transform.position.y < transform.position.y && Mathf.Abs(gameObject.transform.position.x - transform.position.x) <= 1.5)
-        {
-            return true;
-        }
-        return false;
-    }
-    protected virtual bool OnHitArea(Collision2D collision)
-    {
-        bool res = false;
-        //这样要求所有角色的位置放在下方而非中心；或者所有角色的大小相近（不超过2）
-        if (Mathf.Abs(collision.transform.position.y - transform.position.y) <= 1f)
-        {
-            res = true;
-        }
-        return res;
-    }
+    #endregion
     #endregion
     #region Gravity
     public void ChangeGravity(float gravity, float resetTime = 0)

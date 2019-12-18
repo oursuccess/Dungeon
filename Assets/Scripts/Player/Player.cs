@@ -14,6 +14,7 @@ public class Player : MoveCharacter
 
         StartMove();
     }
+    
     #region Old
     protected override void SimpleAutoMove(Vector2 direction)
     {
@@ -69,13 +70,14 @@ public class Player : MoveCharacter
         }
         base.OnCollisionEnter2D(collision);
     }
-    protected void OnTriggerEnter2D(Collider2D collision)
+    protected override void OnTriggerEnter2D(Collider2D collision)
     {
         IHandlePlayerHit hit = collision.gameObject.GetComponent<IHandlePlayerHit>();
         if (hit != null)
         {
             hit.OnPlayerHit(this);
         }
+        base.OnTriggerEnter2D(collision);
     }
     #endregion
     #region Move
@@ -163,7 +165,7 @@ public class Player : MoveCharacter
                                 }
                                 else
                                 {
-                                    if (target.gameObject.name.Contains("Level"))
+                                    if (IsGround(target))
                                     {
                                         Debug.Log("fall to idle");
                                         ChangeState(MoveState.Idle);
@@ -179,7 +181,6 @@ public class Player : MoveCharacter
                         break;
                     case MoveState.Crawl:
                         {
-
                         }
                         break;
                     case MoveState.FindThing:

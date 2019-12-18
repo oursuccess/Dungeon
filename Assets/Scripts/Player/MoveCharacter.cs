@@ -31,13 +31,16 @@ public abstract class MoveCharacter : MoveObject
     }
     public MoveState prevState { get; protected set; }
     public MoveState currState { get; protected set; }
+    public delegate void StateChangedDel(MoveCharacter character);
+    public event StateChangedDel OnStateChanged;
     #endregion
     #endregion
     protected override void Start()
     {
         animator = GetComponent<Animator>();
         sight *= sight;
-        
+        OnStateChanged += OnStateChange;
+
         base.Start();
     }
     #region Old
@@ -70,11 +73,12 @@ public abstract class MoveCharacter : MoveObject
         StopMove();
 
         animator.SetBool("Dead", true);
+        OnStateChanged -= OnStateChange;
         base.Dead();
     }
-    public virtual void MoveWithAnim(Vector2 direction, float velocity)
+    public virtual void MoveWithAnim(Vector2 direction, float distance, float velocity)
     {
-        Move(direction);
+        Move(direction, distance, velocity);
         PlayMoveAnim(direction, velocity);
     }
     #endregion
@@ -134,6 +138,46 @@ public abstract class MoveCharacter : MoveObject
                 break;
             default:
                 break;
+        }
+    }
+    public virtual void OnStateChange(MoveCharacter character)
+    {
+        switch (currState)
+        {
+            case MoveState.Move:
+            case MoveState.Crawl:
+            case MoveState.Run:
+            case MoveState.Fall:
+                {
+                    StartCoroutine(WaitToChangePositionWhenInCollision(1f));
+                }
+                break;
+            case MoveState.Idle:
+                {
+                    StartCoroutine(WaitToChangePositionWhenInCollision(3f));
+                }
+                break;
+        }
+    }
+    protected virtual IEnumerator WaitToChangePositionWhenInCollision(float waitTime)
+    {
+        float stateChangedTime = 0;
+        Vector3 originPosition = transform.position;
+        while(stateChangedTime <= waitTime)
+        {
+            stateChangedTime += Time.deltaTime;
+            yield return null;
+        }
+        if (isInCollision)
+        {
+            FixPosition();
+        }
+    }
+    protected virtual void FixPosition()
+    {
+        while (isInCollision)
+        {
+            ForceMove(Vector2.up, 1f, 0.1f);
         }
     }
     #endregion

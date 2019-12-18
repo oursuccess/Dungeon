@@ -18,19 +18,19 @@ public class Spine : MonoBehaviour, IHandlePlayerHit
     {
         this.player = player;
         player.ChangeState(MoveCharacter.MoveState.Crawl);
-        player.MoveWithAnim(transform.position - player.transform.position, 1);
+        player.MoveWithAnim(player.moveDir, transform.localScale.x * transform.GetComponent<BoxCollider2D>().size.x / 2, 1);
         Invoke("StartCrawl", player.moveTime);
     }
     private void StartCrawl()
     {
-       transform.GetComponent<BoxCollider2D>().enabled = false;
-        player.ChangeGravity(0, (spineHeight + 2f) * player.moveTime);
-        player.Move(new Vector2(0, spineHeight));
+        transform.GetComponent<BoxCollider2D>().enabled = false;
+        player.ChangeGravity(0, (spineHeight + 2) * player.moveTime);
+        player.ForceMove(Vector2.up, spineHeight, 1f);
         Invoke("PlayerMoveNext", spineHeight * player.moveTime);
     }
     private void PlayerMoveNext()
     {
-        player.MoveWithAnim(player.moveDir, 1f);
+        player.MoveWithAnim(player.moveDir, player.moveDistance, player.velocity);
         Invoke("StopCrawl", player.moveTime);
     }
     private void StopCrawl()
@@ -56,19 +56,6 @@ public class Spine : MonoBehaviour, IHandlePlayerHit
         }
         Vector2 down = start;
 
-        spineHeight = up.y - down.y + 0.2f;
-    }
-    private float CalculatePlayerMoveDistance()
-    {
-        float playerH;
-        Collider2D target;
-        Vector2 down = player.transform.position;
-        Vector2 findVDown = new Vector2(0, -0.1f);
-        while((target = Physics2D.Raycast(down , findVDown).collider) != null && target.gameObject == player.gameObject)
-        {
-            down += findVDown;
-        }
-        playerH = player.transform.position.y - down.y;
-        return spineHeight + playerH;
+        spineHeight = up.y - down.y;
     }
 }
