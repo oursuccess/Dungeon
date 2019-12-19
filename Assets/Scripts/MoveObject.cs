@@ -197,6 +197,14 @@ public abstract class MoveObject : MonoBehaviour
             moveRoutine = StartCoroutine(SmoothMovement(direction, distance, velocity));
         }
     }
+    public virtual void MoveTo(Vector2 targetPosition, float moveTime)
+    {
+        float distance = (targetPosition - (Vector2)transform.position).sqrMagnitude;
+        float velocity = distance / moveTime;
+        Vector2 direction = targetPosition - (Vector2)transform.position;
+        direction.Normalize();
+        Move(direction, distance, velocity);
+    }
     public virtual void ForceMove(Vector2 direction)
     {
         ForceMove(direction, velocity);
@@ -209,31 +217,39 @@ public abstract class MoveObject : MonoBehaviour
     {
         StartCoroutine(ForceMovement(direction, distance, velocity));
     }
-    private IEnumerator SmoothMovement(Vector2 direction, float distance, float velocity) {
-        Vector2 start = transform.position;
-        Vector2 end = start + direction * distance;
-        float distanceNow = direction.sqrMagnitude;
-
-        while(distanceNow >= 0.05f)
+    private IEnumerator SmoothMovement(Vector2 direction, float distance, float velocity) 
+    {
+        if (canMove)
         {
-            Vector2 target = Vector2.Lerp(start, end, lastMoveTime * velocity / moveTime);
-            Collider2D collision = Physics2D.Linecast(start, target).collider;
-            if(collision != null && IsUnmovableWall(collision))
-            {
-                Debug.Log("find collider");
-                distanceNow = 0;
-                yield return true;
-            }
-            else
-            {
-                rigidBody2D.MovePosition(target);
-                start = transform.position;
-                distanceNow = (end - start).sqrMagnitude;
-                lastMoveTime += Time.deltaTime;
+            Vector2 start = transform.position;
+            Vector2 end = start + direction * distance;
+            float distanceNow = direction.sqrMagnitude;
+            float t = 0;
 
-                Moving?.Invoke(this);
-                yield return null;
+            while (distanceNow >= 0.01f)
+            {
+                Vector2 target = Vector2.Lerp(start, end, t * velocity / moveTime);
+                Collider2D collision = Physics2D.Linecast(start, target).collider;
+                if (collision != null && IsUnmovableWall(collision))
+                {
+                    distanceNow = 0;
+                    yield return true;
+                }
+                else
+                {
+                    rigidBody2D.MovePosition(target);
+                    start = transform.position;
+                    distanceNow = (end - start).sqrMagnitude;
+                    t += Time.deltaTime;
+
+                    Moving?.Invoke(this);
+                    yield return null;
+                }
             }
+        }
+        else
+        {
+            yield return true;
         }
     }
     private IEnumerator ForceMovement(Vector2 direction, float distance, float velocity)
@@ -242,7 +258,7 @@ public abstract class MoveObject : MonoBehaviour
         Vector2 end = start + direction * distance;
         float distanceNow = direction.sqrMagnitude;
 
-        while(distanceNow >= 0.05f)
+        while(distanceNow >= 0.01f)
         {
             Vector2 target = Vector2.Lerp(start, end, velocity / moveTime);
             Collider2D collision = Physics2D.Linecast(start, target).collider;
@@ -269,10 +285,6 @@ public abstract class MoveObject : MonoBehaviour
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
         overlapCollisions++;
-        if (collision.gameObject.tag.Contains("Level"))
-        {
-            fallDistance = 0;
-        }
         if (IsBelowThanMe(collision.gameObject))
         {
             IHaveTrampleEffect trampleObj = collision.gameObject.GetComponent<IHaveTrampleEffect>();

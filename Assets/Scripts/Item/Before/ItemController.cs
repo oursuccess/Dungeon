@@ -221,7 +221,7 @@ public class ItemController : MonoBehaviour
         mItem.enabled = true;
         var mRigidbody = mItem.gameObject.AddComponent<Rigidbody2D>();
         mRigidbody.freezeRotation = true;
-        mRigidbody.gravityScale = 5f;
+        mRigidbody.gravityScale = 1f;
         mItem.Init();
         mItem.StartMove();
     }

@@ -55,6 +55,26 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
             }
         }
     }
+    public override void ChangeState(int state)
+    {
+        if(state != moveState.currState)
+        {
+            moveState.ChangeState(state);
+            if (state == MoveState.Die)
+            {
+                Dead();
+            }
+            else if (state == MoveState.Consumed)
+            {
+                //播放吞食动画
+                canMove = false;
+            }
+            if (moveState.prevState == MoveState.Fall)
+            {
+                fallDistance = 0;
+            }
+        }
+    }
     #endregion
     protected override void Start()
     {
@@ -100,6 +120,10 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
                     }
                 }
                 #endregion
+                if( moveState.currState == MoveState.Jump)
+                {
+                    continue;
+                }
                 if (moveState.currState == MoveState.Idle || moveState.currState == MoveState.Move)
                 {
 
@@ -170,10 +194,14 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
                 }
                 if (moveState.currState == MoveState.Fall)
                 {
-                    target = FindAnythingOnDirection(Vector2.down, 0.6f);
+                    target = FindAnythingOnDirection(Vector2.down, rigidBody2D.gravityScale * moveTime);
                     if (target != null)
                     {
                         ChangeState(MoveState.Idle);
+                    }
+                    else
+                    {
+                        fallDistance += rigidBody2D.gravityScale * moveTime;
                     }
                     yield return null;
                 }
@@ -194,22 +222,43 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
         }
     }
     #region MoveComp
-    public override void ChangeState(int state)
-    {
-        moveState.ChangeState(state);
-        if(state == MoveState.Die)
-        {
-            Dead();
-        }
-        else if(state == MoveState.Consumed)
-        {
-            //播放吞食动画
-            canMove = false;
-        }
-    }
     private void ConsumeMetal(IMadeByMetal metal)
     {
         metal.ConsumeMe();
+    }
+    public void OnBeenTrampled(MoveObject moveObj)
+    {
+        float x, y = moveObj.fallDistance;
+        moveObj.ChangeGravity(0, 2f);
+        if (moveObj is MoveItem item)
+        {
+            item.ChangeState(MoveState.Jump, MoveState.Idle, 2f);
+            if(item.moveState.prevState == MoveItem.BaseMoveState.Idle)
+            {
+                x = 0;
+            }
+            else
+            {
+                x = item.moveDir.x;
+            }
+        }
+        else if (moveObj is MoveCharacter character)
+        {
+            character.ChangeState(MoveCharacter.MoveState.Jump, MoveCharacter.MoveState.Idle, 2f);
+            if(character.prevState == MoveCharacter.MoveState.Idle)
+            {
+                x = 0;
+            }
+            else
+            {
+                x = character.moveDir.x;
+            }
+        }
+        else
+        {
+            x = moveObj.moveDir.x;
+        }
+        moveObj.ForceMove(new Vector2(x, y), 2, moveObj.velocity);
     }
     private void LoseMetal()
     {
@@ -237,36 +286,5 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
             }
         }
         base.OnCollisionEnter2D(collision);
-    }
-    public void OnBeenTrampled(MoveObject moveObj)
-    {
-        float x, y = moveObj.fallDistance;
-        if (moveObj is MoveItem item)
-        {
-            if(item.moveState.prevState == MoveItem.BaseMoveState.Idle)
-            {
-                x = 0;
-            }
-            else
-            {
-                x = item.moveDir.x * 2;
-            }
-        }
-        else if (moveObj is MoveCharacter character)
-        {
-            if(character.prevState == MoveCharacter.MoveState.Idle)
-            {
-                x = 0;
-            }
-            else
-            {
-                x = character.moveDir.x * 2;
-            }
-        }
-        else
-        {
-            x = moveObj.moveDir.x * 2;
-        }
-        moveObj.ForceMove(new Vector2(x, y), 10);
     }
   }

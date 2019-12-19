@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class MoveItem : MoveObject
+public abstract class MoveItem : MoveObject, IHaveMoveState
 {
     #region State
     public class BaseMoveState
@@ -16,6 +16,7 @@ public abstract class MoveItem : MoveObject
         public static int Move { get; private set; } = 1;
         public static int Fall { get; private set; } = 2;
         public static int Die { get; private set; } = 3;
+        public static int Jump { get; private set; } = 4;
         #endregion
         #region PublicInterface
         public virtual void ChangeState(int state)
@@ -31,11 +32,30 @@ public abstract class MoveItem : MoveObject
     }
     public virtual void ChangeState(int state)
     {
-        moveState.ChangeState(state);
-        if(state == BaseMoveState.Die)
+        if(moveState.currState != state)
         {
-            Dead();
+            moveState.ChangeState(state);
+            if (state == BaseMoveState.Die)
+            {
+                Dead();
+            }
         }
+    }
+    public virtual void ChangeState(int stateFirst, int stateLast, float switchTime)
+    {
+        ChangeState(stateFirst);
+        StartCoroutine(WaitToChangeState(stateLast, switchTime));
+    }
+    protected IEnumerator WaitToChangeState(int state, float time)
+    {
+        float t = 0f;
+        while(t <= time)
+        {
+            t += Time.deltaTime;
+            yield return null;
+        }
+        ChangeState(state);
+        yield return true;
     }
     public BaseMoveState moveState { get; protected set; }
     #endregion

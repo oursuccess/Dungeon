@@ -17,8 +17,8 @@ public class Spine : MonoBehaviour, IHandlePlayerHit
     private void PreCrawl(Player player)
     {
         this.player = player;
-        player.ChangeState(MoveCharacter.MoveState.Crawl);
-        player.MoveWithAnim(player.moveDir, transform.localScale.x * transform.GetComponent<BoxCollider2D>().size.x / 2, 1);
+        player.ChangeState(MoveCharacter.MoveState.Crawl, MoveCharacter.MoveState.Idle, 3f);
+        player.MoveWithAnim(transform.position, 0.3f);
         Invoke("StartCrawl", player.moveTime);
     }
     private void StartCrawl()
@@ -35,7 +35,6 @@ public class Spine : MonoBehaviour, IHandlePlayerHit
     }
     private void StopCrawl()
     {
-        player.ChangeState(MoveCharacter.MoveState.Idle);
         transform.GetComponent<BoxCollider2D>().enabled = true;
     }
     private void FindHeight()

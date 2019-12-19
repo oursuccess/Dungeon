@@ -81,6 +81,14 @@ public abstract class MoveCharacter : MoveObject
         Move(direction, distance, velocity);
         PlayMoveAnim(direction, velocity);
     }
+    public virtual void MoveWithAnim(Vector2 targetPosition, float moveTime)
+    {
+        float distance = (targetPosition - (Vector2)transform.position).sqrMagnitude;
+        float velocity = distance / moveTime;
+        Vector2 direction = targetPosition - (Vector2)transform.position;
+        direction.Normalize();
+        MoveWithAnim(direction, distance, velocity);
+    }
     #endregion
     #region Animator
     private void PlayMoveAnim(Vector2 direction, float velocity)
@@ -139,6 +147,28 @@ public abstract class MoveCharacter : MoveObject
             default:
                 break;
         }
+        switch (prevState)
+        {
+            case MoveState.Fall:
+                fallDistance = 0;
+                break;
+        }
+    }
+    public virtual void ChangeState(MoveState stateFirst, MoveState stateLast, float changeTime)
+    {
+        ChangeState(stateFirst);
+        StartCoroutine(WaitToChangeState(stateLast, changeTime));
+    }
+    protected virtual IEnumerator WaitToChangeState(MoveState state, float time)
+    {
+        float t = 0f;
+        while(t < time) 
+        {
+            t += Time.deltaTime;
+            yield return null;
+        }
+        ChangeState(state);
+        yield return true;
     }
     public virtual void OnStateChange(MoveCharacter character)
     {

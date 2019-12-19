@@ -154,8 +154,7 @@ public class Player : MoveCharacter
                         break;
                     case MoveState.Fall:
                         {
-                            target = FindAnythingOnDirection(Vector2.down, 0.3f);
-                            Debug.Log("fall" + target);
+                            target = FindAnythingOnDirection(Vector2.down, rigidBody2D.gravityScale * moveTime);
                             if (target != null)
                             {
                                 IHaveTrampleEffect ihte = target.gameObject.GetComponent<IHaveTrampleEffect>();
@@ -167,14 +166,13 @@ public class Player : MoveCharacter
                                 {
                                     if (IsGround(target))
                                     {
-                                        Debug.Log("fall to idle");
                                         ChangeState(MoveState.Idle);
                                     }
-                                    else
-                                    {
-                                        fallDistance += rigidBody2D.gravityScale * moveTime;
-                                    }
-                                }
+                                 }
+                            }
+                            else
+                            {
+                                fallDistance += rigidBody2D.gravityScale * moveTime;
                             }
                             //wait for hit collider
                         }
