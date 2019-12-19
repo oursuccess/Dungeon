@@ -5,22 +5,32 @@ using UnityEngine.UI;
 
 public class Player : MoveCharacter
 {
+    #region MoveState
+    public class MoveState : BaseMoveState
+    {
+        #region StateEnum
+        public const int Crawl = 21;
+        public const int FindThing = 22;
+        public const int Run = 23;
+        public const int Attack = 24;
+        #endregion
+        public MoveState()
+        {
+            currState = MoveState.Idle;
+            prevState = MoveState.Idle;
+        }
+    }
+    #endregion
     protected override void Start()
     {
         moveDir = Vector2.right;
-        currState = MoveState.Idle;
+        moveState = new MoveState();
         
         base.Start();
 
         StartMove();
     }
     
-    #region Old
-    protected override void SimpleAutoMove(Vector2 direction)
-    {
-        base.SimpleAutoMove(direction);
-    }
-    #endregion
     #region MoveInterface
     public override void StopMove(float stopTime = 0)
     {
@@ -29,7 +39,7 @@ public class Player : MoveCharacter
     }
     public override void StartMove()
     {
-        StartCoroutine(MoveImpl());
+        StartCoroutine(MovingImpl());
     }
     #endregion
     #region GameOver
@@ -81,7 +91,7 @@ public class Player : MoveCharacter
     }
     #endregion
     #region Move
-    private IEnumerator MoveImpl()
+    protected override IEnumerator MovingImpl()
     {
         Collider2D target = null;
         while (canMove)
@@ -93,7 +103,7 @@ public class Player : MoveCharacter
             else
             {
                 lastMoveTime = 0f;
-                switch (currState)
+                switch (moveState.currState)
                 {
                     case MoveState.Idle:
                         {
@@ -205,5 +215,42 @@ public class Player : MoveCharacter
         }
         yield return null;
     }
+    #region ChangeState
+    public override void ChangeState(int newState)
+    {
+        if (moveState.currState == newState) return;
+        moveState.prevState = moveState.currState;
+        moveState.currState = newState;
+        switch (moveState.currState)
+        {
+            case MoveState.Run:
+            case MoveState.Move:
+                PlayMoveAnim(moveDir, velocity);
+                break;
+            case MoveState.Idle:
+                animator.SetBool("Running", false);
+                break;
+            case MoveState.Attack:
+                animator.SetTrigger("Attack");
+                break;
+            case MoveState.Die:
+                Dead();
+                break;
+            case MoveState.FindThing:
+                break;
+            case MoveState.Fall:
+                animator.SetBool("Running", false);
+                break;
+            default:
+                break;
+        }
+        switch (moveState.prevState)
+        {
+            case MoveState.Fall:
+                fallDistance = 0;
+                break;
+        }
+    }
+    #endregion
     #endregion
 }

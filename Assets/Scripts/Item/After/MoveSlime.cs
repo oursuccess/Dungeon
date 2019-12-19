@@ -8,51 +8,18 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
     #region MoveState
     public class MoveState : BaseMoveState
     {
-        public static int FindPlayer { get; private set; } = 0;
-        public static int FindMetal { get; private set; } = 1;
-        public static int BeenTrampled { get; private set; } = 2;
-        public static int LosePlayer { get; private set; } = 3;
-        public static int LoseMetal { get; private set; } = 4;
-        public static int Consumed { get; private set; } = 5;
-        public static ushort StateNums;
-        public static Dictionary<string, int> States;
+        #region StateEnum
+        public const int FindPlayer = 21;
+        public const int FindMetal = 22;
+        public const int BeenTrampled = 23;
+        public const int LosePlayer = 24;
+        public const int LoseMetal = 25;
+        public const int Consumed = 26;
+        #endregion
         public MoveState()
         {
-            InitState();
             currState = MoveState.Idle;
             prevState = MoveState.Idle;
-        }
-        public void InitState()
-        {
-            if (States == null || States.Count != StateNums)
-            {
-                States = new Dictionary<string, int>();
-                var baseProperties = GetType().BaseType.GetProperties();
-                foreach(var baseProp in baseProperties) {
-                    if(baseProp.PropertyType == typeof(int))
-                    {
-                        if (!States.ContainsKey(baseProp.Name))
-                        {
-                            States.Add(baseProp.Name, (int)baseProp.GetValue(null));
-                        }
-                    }
-                    StateNums = (ushort)States.Count;
-                }
-                var properties = GetType().GetProperties();
-                foreach (var prop in properties)
-                {
-                    if (prop.PropertyType == typeof(int))
-                    {
-                        int propNo = (int)prop.GetValue(null) + StateNums;
-                        prop.SetValue(null, propNo);
-                        if (!States.ContainsKey(prop.Name))
-                        {
-                            States.Add(prop.Name, propNo);
-                        }
-                    }
-                }
-                StateNums = (ushort)States.Count;
-            }
         }
     }
     public override void ChangeState(int state)
@@ -95,7 +62,7 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
         Collider2D target = null;
         while (true)
         {
-            if(lastMoveTime <= moveTime)
+            if (lastMoveTime <= moveTime)
             {
                 lastMoveTime += Time.deltaTime;
             }
@@ -120,105 +87,116 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
                     }
                 }
                 #endregion
-                if( moveState.currState == MoveState.Jump)
+                switch (moveState.currState)
                 {
-                    continue;
-                }
-                if (moveState.currState == MoveState.Idle || moveState.currState == MoveState.Move)
-                {
-
-                    target = FindWithEye<Player>();
-                    if (target != null)
-                    {
-                        ChangeState(MoveState.FindPlayer);
-                        yield return null;
-                    }
-                    else
-                    {
-                        target = FindWithEye<IMadeByMetal>();
-                        if (target != null)
+                    case MoveState.Jump:
                         {
-                            ChangeState(MoveState.FindMetal);
-                            yield return null;
+                            continue;
                         }
-                        else
+                    case MoveState.Idle:
+                    case MoveState.Move:
                         {
-                            target = FindAnythingOnDirection(moveDir, moveDistance);
-                            if (target == null)
+                            target = FindWithEye<Player>();
+                            if (target != null)
                             {
-                                if (UnityEngine.Random.Range(0, 100) <= moveWill)
+                                ChangeState(MoveState.FindPlayer);
+                                yield return null;
+                            }
+                            else
+                            {
+                                target = FindWithEye<IMadeByMetal>();
+                                if (target != null)
                                 {
-                                    Move();
-                                    ChangeState(MoveState.Move);
+                                    ChangeState(MoveState.FindMetal);
                                     yield return null;
                                 }
                                 else
                                 {
-                                    ChangeState(MoveState.Idle);
-                                    yield return null;
+                                    target = FindAnythingOnDirection(moveDir, moveDistance);
+                                    if (target == null)
+                                    {
+                                        if (UnityEngine.Random.Range(0, 100) <= moveWill)
+                                        {
+                                            Move();
+                                            ChangeState(MoveState.Move);
+                                            yield return null;
+                                        }
+                                        else
+                                        {
+                                            ChangeState(MoveState.Idle);
+                                            yield return null;
+                                        }
+                                    }
                                 }
                             }
-                        }
-                    }
 
+                        }
+                        break;
+                    case MoveState.FindMetal:
+                        {
+                            MoveNChangeDirection(target.transform.position - transform.position);
+                            if (FindWithEye<IMadeByMetal>() == null)
+                            {
+                                ChangeState(MoveState.LoseMetal);
+                            }
+                            yield return null;
+                        }
+                        break;
+                    case MoveState.LoseMetal:
+                        {
+                            LoseMetal();
+                            ChangeState(MoveState.Idle);
+                            yield return null;
+                        }
+                        break;
+                    case MoveState.FindPlayer:
+                        {
+                            MoveNChangeDirection(target.transform.position - transform.position);
+                            if (FindWithEye<Player>() == null)
+                            {
+                                ChangeState(MoveState.LosePlayer);
+                            }
+                            yield return null;
+                        }
+                        break;
+                    case MoveState.LosePlayer:
+                        {
+                            LosePlayer();
+                            ChangeState(MoveState.Idle);
+                            yield return null;
+                        }
+                        break;
+                    case MoveState.Fall:
+                        {
+                            target = FindAnythingOnDirection(Vector2.down, rigidBody2D.gravityScale * moveTime);
+                            if (target != null)
+                            {
+                                ChangeState(MoveState.Idle);
+                            }
+                            else
+                            {
+                                fallDistance += rigidBody2D.gravityScale * moveTime;
+                            }
+                            yield return null;
+                        }
+                        break;
+                    case MoveState.BeenTrampled:
+                        {
+                            target = FindAnythingOnDirection(Vector2.up, 1f);
+                            if (target == null)
+                            {
+                                ChangeState(MoveState.Idle);
+                            }
+                        }
+                        break;
+                    case MoveState.Consumed:
+                        {
+                            StopMove();
+                        }
+                        break;
                 }
-                if (moveState.currState == MoveState.FindPlayer)
-                {
-                    MoveNChangeDirection(target.transform.position - transform.position);
-                    if (FindWithEye<Player>() == null)
-                    {
-                        ChangeState(MoveState.LosePlayer);
-                    }
-                    yield return null;
-                }
-                if (moveState.currState == MoveState.FindMetal)
-                {
-                    MoveNChangeDirection(target.transform.position - transform.position);
-                    if (FindWithEye<IMadeByMetal>() == null)
-                    {
-                        ChangeState(MoveState.LoseMetal);
-                    }
-                    yield return null;
-                }
-                if (moveState.currState == MoveState.LoseMetal)
-                {
-                    LoseMetal();
-                    ChangeState(MoveState.Idle);
-                    yield return null;
-                }
-                if (moveState.currState == MoveState.LosePlayer)
-                {
-                    LosePlayer();
-                    ChangeState(MoveState.Idle);
-                    yield return null;
-                }
-                if (moveState.currState == MoveState.Fall)
-                {
-                    target = FindAnythingOnDirection(Vector2.down, rigidBody2D.gravityScale * moveTime);
-                    if (target != null)
-                    {
-                        ChangeState(MoveState.Idle);
-                    }
-                    else
-                    {
-                        fallDistance += rigidBody2D.gravityScale * moveTime;
-                    }
-                    yield return null;
-                }
-                if (moveState.currState == MoveState.BeenTrampled)
-                {
-                    target = FindAnythingOnDirection(Vector2.up, 1f);
-                    if (target == null)
-                    {
-                        ChangeState(MoveState.Idle);
-                    }
-                }
-                if( moveState.currState == MoveState.Consumed)
-                {
-                    StopMove();
-                }
+                yield return null;
             }
-            yield return null;
         }
     }
     #region MoveComp
@@ -230,28 +208,16 @@ public class MoveSlime : MoveItem, IHaveTrampleEffect
     {
         float x, y = moveObj.fallDistance;
         moveObj.ChangeGravity(0, 2f);
-        if (moveObj is MoveItem item)
+        if (moveObj is MoveCreature creature)
         {
-            item.ChangeState(MoveState.Jump, MoveState.Idle, 2f);
-            if(item.moveState.prevState == MoveItem.BaseMoveState.Idle)
+            creature.ChangeState(MoveState.Jump, MoveState.Idle, 2f);
+            if(creature.moveState.prevState == MoveState.Idle)
             {
                 x = 0;
             }
             else
             {
-                x = item.moveDir.x;
-            }
-        }
-        else if (moveObj is MoveCharacter character)
-        {
-            character.ChangeState(MoveCharacter.MoveState.Jump, MoveCharacter.MoveState.Idle, 2f);
-            if(character.prevState == MoveCharacter.MoveState.Idle)
-            {
-                x = 0;
-            }
-            else
-            {
-                x = character.moveDir.x;
+                x = creature.moveDir.x;
             }
         }
         else

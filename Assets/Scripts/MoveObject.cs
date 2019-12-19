@@ -465,32 +465,6 @@ public abstract class MoveObject : MonoBehaviour
         }
         return res;
     }
-    protected virtual Collider2D FindWithEye<T>()
-    {
-        boxcollider2D.enabled = false;
-        Collider2D res = null;
-        //查找相关内容
-        RaycastHit2D hit;
-        Vector2 start = transform.position;
-        for(int i = 0; i <= sightRange / 2; i += 10)
-        {
-            float f = (float)i / 180;
-            Vector2 end = start + new Vector2(sightDirection.x, sightDirection.y + f) * sightDistance;
-            hit = Physics2D.Linecast(start, end);
-            if(hit.collider == null)
-            {
-                hit = Physics2D.Linecast(start, end);
-            }
-            if (hit.collider != null && hit.collider.gameObject.GetComponent<T>() != null)
-            {
-                res = hit.collider;
-                boxcollider2D.enabled = true;
-                return res;
-            }
-        }
-        boxcollider2D.enabled = true;
-        return res;
-    }
     #endregion
     #endregion
     #region Gravity
