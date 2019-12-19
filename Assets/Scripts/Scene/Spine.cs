@@ -17,7 +17,7 @@ public class Spine : MonoBehaviour, IHandlePlayerHit
     private void PreCrawl(Player player)
     {
         this.player = player;
-        player.ChangeState(MoveCharacter.MoveState.Crawl, MoveCharacter.MoveState.Idle, 3f);
+        player.ChangeState(Player.MoveState.Crawl, Player.MoveState.Idle, 3f);
         player.MoveWithAnim(transform.position, 0.3f);
         Invoke("StartCrawl", player.moveTime);
     }

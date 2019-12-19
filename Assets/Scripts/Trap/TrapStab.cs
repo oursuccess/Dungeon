@@ -12,7 +12,7 @@ public class TrapStab : Trap, IHandlePlayerSought, IMadeByMetal
 
     public override void Effect(Player player)
     {
-        player.ChangeState(MoveCharacter.MoveState.Die);
+        player.ChangeState(Player.MoveState.Die);
     }
 
     public override void OnPlayerHit(Player player)
